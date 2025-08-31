@@ -98,7 +98,7 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
         <button
           onClick={fetchStrategyMetrics}
           disabled={loading}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
                    disabled:opacity-50 transition-colors"
         >
           {loading ? '🔄 Loading...' : '🔄 Refresh'}
@@ -107,15 +107,15 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
 
       {/* Best Strategy Recommendation */}
       {bestStrategy && (
-        <div className="mb-6 p-4 bg-success-50 border border-success-200 rounded-lg">
-          <h3 className="font-semibold text-success-700 mb-2">
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <h3 className="font-semibold text-green-700 mb-2">
             🎯 Recommended Strategy
           </h3>
           <div className="flex justify-between items-center">
-            <span className="text-success-600">
+            <span className="text-green-600">
               Best APY: {formatAPY(bestStrategy.apy)}
             </span>
-            <span className="text-xs text-success-500 font-mono">
+            <span className="text-xs text-green-500 font-mono">
               {bestStrategy.address.slice(0, 8)}...
             </span>
           </div>
@@ -148,9 +148,9 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
                 <td className="py-3 px-2">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                     ${strategy.apy > 10 
-                      ? 'bg-success-100 text-success-800' 
+                      ? 'bg-green-100 text-green-800' 
                       : strategy.apy > 5 
-                        ? 'bg-warning-100 text-warning-800'
+                        ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-gray-100 text-gray-800'
                     }`}>
                     {formatAPY(strategy.apy)}
@@ -162,8 +162,8 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
                 <td className="py-3 px-2">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                     ${strategy.isActive 
-                      ? 'bg-success-100 text-success-800' 
-                      : 'bg-danger-100 text-danger-800'
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
                     }`}>
                     {strategy.isActive ? '✅ Active' : '❌ Inactive'}
                   </span>
@@ -172,7 +172,7 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
                   <div className="flex items-center">
                     <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
                       <div
-                        className={`bg-primary-600 h-2 rounded-full ${
+                        className={`bg-blue-600 h-2 rounded-full ${
                           strategy.allocation === 100 ? 'w-full' : 
                           strategy.allocation >= 75 ? 'w-3/4' :
                           strategy.allocation >= 50 ? 'w-1/2' :
@@ -210,7 +210,7 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
 
       {loading && (
         <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
       )}
     </div>
