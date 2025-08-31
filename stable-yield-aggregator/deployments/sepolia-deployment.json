@@ -1,0 +1,13 @@
+{
+  "network": "sepolia",
+  "deployer": "0x0898eD837a003F11efc212f13591a20cdeffb912",
+  "contracts": {
+    "mockUSDC": "0x3F2178618013EeFE109857aB3eC83049C90968bA",
+    "realUSDC": null,
+    "strategyManager": "0x9C2e9Ffc91065f3f780387c38DAd7FCBD884e25a",
+    "dummyStrategy": "0x21df534BDfdf729a300d99D7B04286385Be8D720",
+    "stableVault": "0xc40Ddb079330D8E53245DF51A245BC42BA5cd74c"
+  },
+  "gasUsed": "Estimated",
+  "timestamp": "2025-08-31T16:40:49.597Z"
+}
