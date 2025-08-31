@@ -7,7 +7,7 @@ import {
   CogIcon, 
   ArrowRightOnRectangleIcon 
 } from '@heroicons/react/24/outline'
-import { cn } from '../lib/utils'
+import { cn } from '../../lib/utils'
 
 interface WalletConnectProps {
   isConnected: boolean
@@ -29,7 +29,7 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
       <button
         onClick={onConnect}
         className={cn(
-          "btn-primary px-4 py-2 rounded-lg",
+          "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700",
           "flex items-center space-x-2",
           "transition-all duration-200",
           "hover:scale-105 active:scale-95"
@@ -45,13 +45,13 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
     <Menu as="div" className="relative">
       <Menu.Button
         className={cn(
-          "btn-secondary px-4 py-2 rounded-lg",
+          "px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg",
           "flex items-center space-x-2 min-w-[200px]",
           "hover:bg-gray-50 transition-colors"
         )}
       >
         <div className="flex items-center space-x-3">
-          <div className="w-2 h-2 bg-success-500 rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <div className="text-left">
             <div className="text-sm font-medium text-gray-900">
               {address?.slice(0, 6)}...{address?.slice(-4)}

@@ -38,3 +38,14 @@ export const ENHANCED_STRATEGY_ABI = [
   "function withdraw(uint256 amount) external returns (uint256)",
   "function harvest() external returns (uint256)",
 ] as const;
+
+// Vault ABI for core functionality
+export const VAULT_ABI = [
+  "function deposit(uint256 amount) external returns (uint256)",
+  "function withdraw(uint256 amount) external returns (uint256)",
+  "function balanceOf(address account) external view returns (uint256)",
+  "function totalSupply() external view returns (uint256)",
+  "function sharePrice() external view returns (uint256)",
+  "function totalAssets() external view returns (uint256)",
+  "function getUserShare(address user) external view returns (uint256)",
+] as const;
