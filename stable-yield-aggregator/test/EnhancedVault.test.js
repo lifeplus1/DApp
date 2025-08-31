@@ -24,7 +24,7 @@ describe("Enhanced Stablecoin Yield Aggregator", function () {
     await dummyStrategy.waitForDeployment();
 
     const UniswapV3Strategy = await ethers.getContractFactory("UniswapV3Strategy");
-    uniStrategy = await UniswapV3Strategy.deploy(asset.target, ethers.ZeroAddress); // Mock pool
+    uniStrategy = await UniswapV3Strategy.deploy(asset.target, ethers.ZeroAddress, owner.address); // Mock pool
     await uniStrategy.waitForDeployment();
 
     // Deploy Vault

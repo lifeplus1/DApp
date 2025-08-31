@@ -10,6 +10,7 @@ import {
   NotificationCenter 
 } from './components/DeFiComponents';
 import { YieldAnalytics } from './components/YieldAnalytics';
+import { UniswapV3Dashboard } from './components/UniswapV3Dashboard';
 import { useDeFi } from './contexts/DeFiContext';
 
 const DeFiApp: React.FC = () => {
@@ -76,10 +77,14 @@ const DeFiApp: React.FC = () => {
               <AdminPanel />
             </div>
 
-            {/* Performance Metrics */}
             {/* Advanced Yield Analytics */}
             <div className="mt-8">
               <YieldAnalytics web3Provider={state.provider} />
+            </div>
+
+            {/* Real Uniswap V3 Strategy Dashboard */}
+            <div className="mt-8">
+              <UniswapV3Dashboard />
             </div>
 
             <div className="mt-8 bg-white rounded-lg shadow-lg p-6">

@@ -41,6 +41,18 @@ export class TypeSafeContractWrapper {
     this.signer = signer
   }
 
+  // Create type-safe contract instance
+  createContract<T extends ethers.Contract>(
+    address: string,
+    abi: any[]
+  ): T {
+    return new ethers.Contract(
+      address, 
+      abi, 
+      this.signer || this.provider
+    ) as T
+  }
+
   // Safe contract method execution with comprehensive error handling
   async safeExecute<T>(
     operation: () => Promise<T>,
