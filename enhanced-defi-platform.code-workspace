@@ -1,0 +1,121 @@
+{
+  "folders": [
+    {
+      "name": "🏠 Root",
+      "path": "."
+    },
+    {
+      "name": "📄 Documentation",
+      "path": "./docs"
+    },
+    {
+      "name": "⚡ Smart Contracts",
+      "path": "./stable-yield-aggregator"
+    },
+    {
+      "name": "🎨 Frontend",
+      "path": "./stable-yield-aggregator/frontend"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.preferTypeOnlyAutoImports": true,
+    "typescript.suggest.autoImports": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/artifacts": true,
+      "**/cache": true,
+      "**/.git": true,
+      "**/dist": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/artifacts": true,
+      "**/typechain-types": true,
+      "**/dist": true
+    },
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "solidity.defaultCompiler": "remote",
+    "solidity.compileUsingRemoteVersion": "v0.8.19+commit.7dd6d404",
+    "typescript.preferences.includePackageJsonAutoImports": "on"
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.vscode-typescript-next",
+      "bradlc.vscode-tailwindcss",
+      "ms-vscode.vscode-json",
+      "JuanBlanco.solidity",
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-eslint"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "🚀 Start Development",
+        "type": "shell",
+        "command": "./dev.sh",
+        "args": ["full-dev"],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "🧪 Run Tests",
+        "type": "shell",
+        "command": "./dev.sh",
+        "args": ["test"],
+        "group": "test",
+        "presentation": {
+          "echo": true,
+          "reveal": "always"
+        }
+      },
+      {
+        "label": "🌐 Deploy to Sepolia",
+        "type": "shell",
+        "command": "./dev.sh",
+        "args": ["deploy-sepolia"],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always"
+        }
+      },
+      {
+        "label": "🔍 Type Check",
+        "type": "shell",
+        "command": "./dev.sh",
+        "args": ["type-check"],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always"
+        }
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "🌐 Launch Frontend",
+        "type": "node",
+        "request": "launch",
+        "cwd": "${workspaceFolder}/stable-yield-aggregator/frontend",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": ["run", "dev"]
+      }
+    ]
+  }
+}

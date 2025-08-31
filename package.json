@@ -1,0 +1,52 @@
+{
+  "name": "enhanced-defi-platform",
+  "version": "2.0.0",
+  "description": "Enterprise-grade DeFi Yield Aggregator Platform",
+  "private": true,
+  "workspaces": [
+    "stable-yield-aggregator",
+    "stable-yield-aggregator/frontend"
+  ],
+  "scripts": {
+    "setup": "./dev.sh setup",
+    "dev": "./dev.sh frontend",
+    "dev:full": "./dev.sh full-dev",
+    "test": "./dev.sh test",
+    "test:enhanced": "./dev.sh test-enhanced",
+    "compile": "./dev.sh compile",
+    "build": "./dev.sh build",
+    "deploy:local": "./dev.sh deploy-local",
+    "deploy:sepolia": "./dev.sh deploy-sepolia",
+    "type-check": "./dev.sh type-check",
+    "clean": "./dev.sh clean",
+    "status": "./dev.sh status",
+    "docs:serve": "cd docs && python3 -m http.server 8080",
+    "git:commit": "git add . && git commit -m",
+    "git:push": "git push origin main",
+    "release:prepare": "npm run compile && npm run test && npm run build",
+    "deploy:testnet": "npm run compile && ./dev.sh deploy-sepolia"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lifeplus1/DApp.git"
+  },
+  "keywords": [
+    "defi",
+    "yield-farming",
+    "ethereum",
+    "smart-contracts",
+    "typescript",
+    "react",
+    "tailwind"
+  ],
+  "author": "Chris",
+  "license": "AGPL-3.0-only"
+}

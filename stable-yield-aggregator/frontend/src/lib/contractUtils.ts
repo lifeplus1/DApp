@@ -42,7 +42,7 @@ export class TypeSafeContractWrapper {
   }
 
   // Create type-safe contract instance
-  createContract<T extends ethers.Contract>(
+  createContract<T extends ethers.Contract = ethers.Contract>(
     address: string,
     abi: any[]
   ): T {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import { DeFiProvider } from './contexts/DeFiContext';
 import { 
@@ -11,10 +11,17 @@ import {
 } from './components/DeFiComponents';
 import { YieldAnalytics } from './components/YieldAnalytics';
 import { UniswapV3Dashboard } from './components/UniswapV3Dashboard';
+import EnhancedYieldApp from './components/EnhancedYieldApp';
 import { useDeFi } from './contexts/DeFiContext';
 
 const DeFiApp: React.FC = () => {
   const { state, actions } = useDeFi();
+  const [showEnhanced, setShowEnhanced] = useState(false);
+
+  // Toggle between original and enhanced view
+  if (showEnhanced) {
+    return <EnhancedYieldApp />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -26,9 +33,21 @@ const DeFiApp: React.FC = () => {
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
             🏦 Stable Yield Aggregator
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-600 mb-4">
             Enterprise-grade yield optimization with TypeScript safety
           </p>
+          
+          {/* Platform Toggle */}
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={() => setShowEnhanced(true)}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 flex items-center space-x-2"
+            >
+              <span className="text-xl">🚀</span>
+              <span>Experience Enhanced 21% APY Strategy</span>
+            </button>
+          </div>
+          
           <div className="mt-2 flex justify-center space-x-4 text-sm">
             <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
               ✅ Type-Safe DeFi

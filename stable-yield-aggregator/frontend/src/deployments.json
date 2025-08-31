@@ -1,0 +1,18 @@
+{
+  "network": {
+    "name": "sepolia",
+    "chainId": "11155111"
+  },
+  "deployer": "0x0898eD837a003F11efc212f13591a20cdeffb912",
+  "contracts": {
+    "mockUSDC": "0xB283c2D036903b673Ba43f50AD8DB45050b78AB0",
+    "enhancedStrategy": "0xD3e7F770403019aFCAE9A554aB00d062e2688348",
+    "stableVault": "0x0AFCE27CA41E84a50144324a2A5762459bF2C487"
+  },
+  "performance": {
+    "currentAPY": "16.8%",
+    "strategyActive": true,
+    "deploymentTime": "2025-08-31T20:17:01.943Z"
+  },
+  "lastUpdated": "2025-08-31T20:17:01.944Z"
+}
