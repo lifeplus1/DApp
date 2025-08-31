@@ -9,6 +9,7 @@ import {
   AdminPanel,
   NotificationCenter 
 } from './components/DeFiComponents';
+import { YieldAnalytics } from './components/YieldAnalytics';
 import { useDeFi } from './contexts/DeFiContext';
 
 const DeFiApp: React.FC = () => {
@@ -76,6 +77,11 @@ const DeFiApp: React.FC = () => {
             </div>
 
             {/* Performance Metrics */}
+            {/* Advanced Yield Analytics */}
+            <div className="mt-8">
+              <YieldAnalytics web3Provider={state.provider} />
+            </div>
+
             <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-bold mb-4">📈 Platform Metrics</h3>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
