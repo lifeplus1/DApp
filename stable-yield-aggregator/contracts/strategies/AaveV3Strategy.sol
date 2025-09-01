@@ -9,6 +9,11 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "../../interfaces/IStrategyV2.sol";
 
+interface IFeeControllerV2 {
+    function performanceFeeBps() external view returns (uint256);
+    function notifyFee(address token, uint256 amount) external;
+}
+
 // Aave V3 Interfaces
 interface IPool {
     function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode) external;
@@ -99,6 +104,7 @@ contract AaveV3Strategy is IStrategyV2, AccessControl, ReentrancyGuard, Pausable
     uint256 public totalBorrows;
     uint256 public lastHarvest;
     uint256 public performanceFeeAccrued;
+    IFeeControllerV2 public feeController; // optional external fee controller
     uint256 public totalPrincipal;
     uint256 public totalYieldGenerated;
 
@@ -317,7 +323,12 @@ contract AaveV3Strategy is IStrategyV2, AccessControl, ReentrancyGuard, Pausable
 
         if (yield > 0) {
             // Calculate performance fee
-            uint256 feeAmount = (yield * config.performanceFee) / MAX_BPS;
+            uint256 feeBps = config.performanceFee;
+            if (address(feeController) != address(0)) {
+                // Use centralized controller rate if present
+                feeBps = feeController.performanceFeeBps();
+            }
+            uint256 feeAmount = (yield * feeBps) / MAX_BPS;
             performanceFeeAccrued += feeAmount;
             totalYieldGenerated += yield;
 
@@ -332,10 +343,24 @@ contract AaveV3Strategy is IStrategyV2, AccessControl, ReentrancyGuard, Pausable
                 }
             }
 
+            // Withdraw fee portion & send to controller if configured
+            if (feeAmount > 0 && address(feeController) != address(0)) {
+                // Withdraw underlying equal to feeAmount
+                aavePool.withdraw(address(asset), feeAmount, address(this));
+                // Transfer to controller & notify
+                asset.approve(address(feeController), 0); // safety reset (not strictly needed)
+                asset.approve(address(feeController), feeAmount);
+                asset.transfer(address(feeController), feeAmount);
+                feeController.notifyFee(address(asset), feeAmount);
+            }
             lastHarvest = block.timestamp;
             emit PerformanceFeeCollected(feeAmount, block.timestamp);
         }
         return yield;
+    }
+
+    function setFeeController(address _fc) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        feeController = IFeeControllerV2(_fc);
     }
 
     /**

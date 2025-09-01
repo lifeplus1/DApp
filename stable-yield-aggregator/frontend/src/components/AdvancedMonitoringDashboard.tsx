@@ -77,13 +77,15 @@ export const AdvancedMonitoringDashboard: React.FC = () => {
     }
   ]);
 
-  const [automationStatus, setAutomationStatus] = useState<AutomationStatus>({
+  const [automationStatus, _setAutomationStatus] = useState<AutomationStatus>({
     rebalancingEnabled: true,
     emergencyMode: false,
     lastAutomatedAction: 'Health factor adjustment - 5 min ago',
     nextRebalanceEstimate: 'In 4-6 hours (volatility dependent)',
     automationEfficiency: 96
   });
+
+  // Note: _setAutomationStatus reserved for future real-time automation updates
 
   // Simulate real-time updates
   useEffect(() => {
