@@ -80,6 +80,10 @@ export default tseslint.config(
       'coverage/**/*',
       'stable-yield-aggregator/coverage/',
       'stable-yield-aggregator/coverage/**/*',
+      'stable-yield-aggregator/frontend/dist/',
+      'stable-yield-aggregator/frontend/dist/**/*',
+      '**/dist/**',
+      '**/build/**',
       '*.min.js',
       'stable-yield-aggregator/artifacts/',
       'stable-yield-aggregator/cache/',
@@ -89,6 +93,14 @@ export default tseslint.config(
       '.turbo/',
       '**/*.min.js',
       '**/lcov-report/**',
+      // Service worker files
+      '**/sw.js',
+      '**/registerSW.js',
+      '**/workbox-*.js',
+      // Generated frontend files
+      '**/*bundle*.js',
+      '**/*chunk*.js',
+      '**/*vendor*.js',
     ],
   }
 )

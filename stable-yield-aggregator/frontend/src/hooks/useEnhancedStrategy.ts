@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
-import { ethers } from 'ethers';
-import { TypeSafeContractWrapper, DeFiOperationResult } from '../lib/contractUtils';
+import { BrowserProvider, ethers, JsonRpcSigner } from 'ethers';
+import { useCallback, useEffect, useState } from 'react';
 import LiveUniswapV3StrategyABI from '../abi/LiveUniswapV3Strategy.json';
 import deployments from '../deployments.json';
+import { DeFiOperationResult, TypeSafeContractWrapper } from '../lib/contractUtils';
 
 // Enhanced strategy ABI (key functions for backward compatibility)
 const ENHANCED_STRATEGY_ABI = [
@@ -40,8 +40,8 @@ export interface EnhancedStrategyMetrics {
 export interface UseEnhancedStrategyOptions {
   strategyAddress: string;
   vaultAddress: string;
-  provider?: ethers.Provider;
-  signer?: ethers.Signer;
+  provider?: BrowserProvider | ethers.Provider | null | undefined;
+  signer?: JsonRpcSigner | ethers.Signer | null | undefined;
 }
 
 export const useEnhancedStrategy = ({
@@ -57,7 +57,7 @@ export const useEnhancedStrategy = ({
   
   const contractWrapper = new TypeSafeContractWrapper(
     provider || new ethers.BrowserProvider(window.ethereum as ethers.Eip1193Provider),
-    signer
+    signer ?? undefined
   );
 
   // Load strategy metrics

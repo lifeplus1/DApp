@@ -1,5 +1,5 @@
-import { ethers, BrowserProvider } from 'ethers';
-import type { NetworkInfo, EthereumProvider } from '../types/ethereum';
+import { BrowserProvider, ethers } from 'ethers';
+import type { EthereumProvider, NetworkInfo } from '../types/ethereum';
 
 export const SEPOLIA_NETWORK: NetworkInfo = {
   chainId: '0xaa36a7',
@@ -26,8 +26,9 @@ export const switchToSepolia = async (ethereum: EthereumProvider): Promise<void>
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: SEPOLIA_NETWORK.chainId }],
     });
-  } catch (switchError: any) {
-    if (switchError.code === 4902) {
+  } catch (switchError) {
+    const error = switchError as { code: number };
+    if (error.code === 4902) {
       await ethereum.request({
         method: 'wallet_addEthereumChain',
         params: [{

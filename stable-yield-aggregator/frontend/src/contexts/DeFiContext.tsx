@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { ethers, BrowserProvider } from 'ethers';
-import type { Strategy, ContractAddresses } from '../types/web3';
+import { BrowserProvider, Contract, ethers } from 'ethers';
+import React, { createContext, useContext, useEffect, useReducer } from 'react';
+import type { ContractAddresses, Strategy } from '../types/web3';
+
+interface ContractInstances {
+  vault: Contract | null;
+  mockUSDC: Contract | null;
+  strategyManager: Contract | null;
+  dummyStrategy: Contract | null;
+}
 
 // Advanced state management for DeFi operations
 interface DeFiState {
@@ -11,7 +18,7 @@ interface DeFiState {
   isConnecting: boolean;
   
   // Contract state
-  contracts: any;
+  contracts: ContractInstances;
   balances: {
     usdc: bigint;
     vault: bigint;
@@ -56,7 +63,12 @@ const initialState: DeFiState = {
   provider: null,
   chainId: null,
   isConnecting: false,
-  contracts: null,
+  contracts: {
+    vault: null,
+    mockUSDC: null,
+    strategyManager: null,
+    dummyStrategy: null
+  },
   balances: {
     usdc: 0n,
     vault: 0n,
@@ -236,8 +248,9 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: '0xaa36a7' }],
           });
-        } catch (switchError: any) {
-          if (switchError.code === 4902) {
+        } catch (switchError) {
+          const error = switchError as { code: number };
+          if (error.code === 4902) {
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [{
@@ -268,10 +281,11 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
 
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to connect wallet';
       dispatch({
         type: 'CONNECT_ERROR',
-        payload: error.message || 'Failed to connect wallet'
+        payload: message
       });
     }
   };
@@ -375,12 +389,13 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       await refreshBalances();
 
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       dispatch({
         type: 'ADD_NOTIFICATION',
         payload: {
           type: 'error',
-          message: `Deposit failed: ${error.message || 'Unknown error'}`
+          message: `Deposit failed: ${message}`
         }
       });
     } finally {
@@ -412,12 +427,13 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       await refreshBalances();
 
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       dispatch({
         type: 'ADD_NOTIFICATION',
         payload: {
           type: 'error',
-          message: `Withdrawal failed: ${error.message || 'Unknown error'}`
+          message: `Withdrawal failed: ${message}`
         }
       });
     } finally {
@@ -448,12 +464,13 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await refreshBalances();
       await refreshStrategies();
 
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       dispatch({
         type: 'ADD_NOTIFICATION',
         payload: {
           type: 'error',
-          message: `Harvest failed: ${error.message || 'Unknown error'}`
+          message: `Harvest failed: ${message}`
         }
       });
     } finally {

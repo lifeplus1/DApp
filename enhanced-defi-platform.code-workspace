@@ -40,7 +40,7 @@
     },
     "terminal.integrated.cwd": "${workspaceFolder}",
     "solidity.defaultCompiler": "remote",
-    "solidity.compileUsingRemoteVersion": "v0.8.19+commit.7dd6d404",
+    "solidity.compileUsingRemoteVersion": "v0.8.26+commit.8a97fa7a",
     "typescript.preferences.includePackageJsonAutoImports": "on"
   },
   "extensions": {

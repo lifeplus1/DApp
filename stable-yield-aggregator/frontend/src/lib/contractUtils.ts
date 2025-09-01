@@ -44,7 +44,7 @@ export class TypeSafeContractWrapper {
   // Create type-safe contract instance
   createContract<T extends ethers.Contract = ethers.Contract>(
     address: string,
-    abi: any[]
+    abi: ethers.InterfaceAbi
   ): T {
     return new ethers.Contract(
       address, 
@@ -67,7 +67,7 @@ export class TypeSafeContractWrapper {
         success: true,
         data: result
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(`❌ ${operationName} failed:`, error)
       
       // Parse Web3 errors into user-friendly messages
@@ -82,9 +82,10 @@ export class TypeSafeContractWrapper {
   }
 
   // Enhanced error parsing for Web3 interactions
-  private parseError(error: any): DeFiError {
-    const errorMessage = error?.message?.toLowerCase() || ''
-    const errorCode = error?.code
+  private parseError(error: unknown): DeFiError {
+    const errorObj = error as { message?: string; code?: number };
+    const errorMessage = errorObj?.message?.toLowerCase() || ''
+    const errorCode = errorObj?.code
     
     // User rejected transaction
     if (errorCode === 4001 || errorMessage.includes('user rejected')) {
@@ -157,7 +158,7 @@ export class TypeSafeContractWrapper {
 // Typed contract factory for enhanced type safety
 export const createTypeSafeContract = <T extends ethers.Contract>(
   address: string,
-  abi: any[],
+  abi: ethers.InterfaceAbi,
   provider: ethers.Provider,
   signer?: ethers.Signer
 ): T => {

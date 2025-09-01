@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -19,18 +19,30 @@ contract FeeController is Ownable {
     event StrategyRegistered(address indexed strategy, bool enabled);
     event StrategyRemoved(address indexed strategy);
     event PerformanceFeeUpdated(uint256 oldFeeBps, uint256 newFeeBps);
-    event FeesAccrued(address indexed strategy, address indexed token, uint256 amount);
-    event FeesWithdrawn(address indexed recipient, address indexed token, uint256 amount);
-    event FeesWithdrawnPerStrategy(address indexed strategy, address indexed token, uint256 amount);
+    event FeesAccrued(
+        address indexed strategy,
+        address indexed token,
+        uint256 amount
+    );
+    event FeesWithdrawn(
+        address indexed recipient,
+        address indexed token,
+        uint256 amount
+    );
+    event FeesWithdrawnPerStrategy(
+        address indexed strategy,
+        address indexed token,
+        uint256 amount
+    );
 
     // ============ Constants ============
     uint256 public constant MAX_FEE_BPS = 2_000; // 20% safety cap
 
     // ============ Storage ============
-    mapping(address => bool) public isStrategy;               // authorized fee sources
+    mapping(address => bool) public isStrategy; // authorized fee sources
     mapping(address => mapping(address => uint256)) public accrued; // token => strategy => amount
-    address[] public strategies;                              // registry list
-    mapping(address => uint256) private strategyIndex;        // 1-based index in strategies array
+    address[] public strategies; // registry list
+    mapping(address => uint256) private strategyIndex; // 1-based index in strategies array
     uint256 public performanceFeeBps = 1_000; // default 10%
 
     // Destination for withdrawn fees (can be a splitter later)
@@ -43,13 +55,19 @@ contract FeeController is Ownable {
     }
 
     constructor(address _owner, address _feeRecipient) Ownable(_owner) {
-        require(_owner != address(0) && _feeRecipient != address(0), "ZERO_ADDR");
+        require(
+            _owner != address(0) && _feeRecipient != address(0),
+            "ZERO_ADDR"
+        );
         feeRecipient = _feeRecipient;
     }
 
     // ============ Admin Functions ============
 
-    function registerStrategy(address strategy, bool enabled) external onlyOwner {
+    function registerStrategy(
+        address strategy,
+        bool enabled
+    ) external onlyOwner {
         require(strategy != address(0), "ZERO_ADDR");
         if (enabled && !isStrategy[strategy]) {
             strategies.push(strategy);
@@ -132,13 +150,23 @@ contract FeeController is Ownable {
         IERC20(token).transfer(feeRecipient, total);
         emit FeesWithdrawn(feeRecipient, token, total);
         // Attempt auto-forward distribution if recipient supports distribute(token)
-        (bool ok, ) = feeRecipient.call(abi.encodeWithSignature("distribute(address)", token));
+        (bool ok, ) = feeRecipient.call(
+            abi.encodeWithSignature("distribute(address)", token)
+        );
         ok; // silence compiler (non-reverting optional hook)
     }
 
-    function strategiesCount() external view returns (uint256) { return strategies.length; }
+    function strategiesCount() external view returns (uint256) {
+        return strategies.length;
+    }
 
-    function getAccrued(address token) external view returns (address[] memory stratList, uint256[] memory amounts) {
+    function getAccrued(
+        address token
+    )
+        external
+        view
+        returns (address[] memory stratList, uint256[] memory amounts)
+    {
         uint256 length = strategies.length;
         stratList = new address[](length);
         amounts = new uint256[](length);

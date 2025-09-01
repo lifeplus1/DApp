@@ -1,6 +1,7 @@
 {
   "name": "enhanced-defi-platform",
   "version": "2.0.0",
+  "type": "module",
   "description": "Enterprise-grade DeFi Yield Aggregator Platform",
   "private": true,
   "workspaces": [

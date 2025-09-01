@@ -29,5 +29,5 @@ export interface ContractAddresses {
 export interface Web3Error {
   code: number;
   message: string;
-  data?: any;
+  data?: unknown;
 }

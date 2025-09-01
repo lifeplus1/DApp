@@ -73,10 +73,12 @@ case "${1:-help}" in
         ;;
         
     "test-enhanced")
+        print_warning "⚠️ test-enhanced is deprecated. Use 'test' to run all tests including enhanced strategies."
         print_header
-        echo "🧪 Testing Enhanced Real Yield Strategy..."
+        echo "🧪 Running comprehensive test suite..."
         cd "$CONTRACTS_DIR"
-        npx hardhat test test/EnhancedRealYieldStrategy.test.js
+        npm run test
+        print_success "All tests passed!"
         ;;
         
     "deploy-local")

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import EnhancedStrategyDashboard from './EnhancedStrategyDashboard';
+import React, { useEffect, useState } from 'react';
 import deployments from '../deployments.json';
-import '../types/ethereum'; // Import the global ethereum types
+import { WalletSwitchError } from '../types/ethereum';
+import EnhancedStrategyDashboard from './EnhancedStrategyDashboard';
 
 const EnhancedYieldApp: React.FC = () => {
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
@@ -52,8 +52,9 @@ const EnhancedYieldApp: React.FC = () => {
             params: [{ chainId: `0x${parseInt(deployments.network.chainId).toString(16)}` }],
           });
           await checkNetwork(newProvider);
-        } catch (switchError: any) {
-          if (switchError.code === 4902) {
+        } catch (switchError) {
+          const error = switchError as WalletSwitchError;
+          if (error.code === 4902) {
             // Network not added to wallet, add it
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
@@ -80,9 +81,10 @@ const EnhancedYieldApp: React.FC = () => {
       setSigner(newSigner);
       setAccount(address);
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error connecting wallet:', error);
-      alert('Failed to connect wallet: ' + error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert('Failed to connect wallet: ' + errorMessage);
     } finally {
       setIsConnecting(false);
     }
@@ -98,14 +100,15 @@ const EnhancedYieldApp: React.FC = () => {
 
   // Initialize provider on load
   useEffect(() => {
-    if (window.ethereum && (window.ethereum as any).selectedAddress) {
+    if (window.ethereum && window.ethereum.isMetaMask) {
       connectWallet();
     }
 
     // Listen for account changes
     if (window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
-        if (accounts.length === 0) {
+      window.ethereum.on('accountsChanged', (...accounts: unknown[]) => {
+        const accountList = accounts[0] as string[];
+        if (accountList.length === 0) {
           disconnectWallet();
         } else {
           connectWallet();

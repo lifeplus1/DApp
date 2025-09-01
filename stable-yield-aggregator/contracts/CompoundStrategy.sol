@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -34,68 +34,83 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
     /*//////////////////////////////////////////////////////////////
                                CONSTANTS
     //////////////////////////////////////////////////////////////*/
-    
-    IERC20 public immutable asset; // USDC
+
+    IERC20 public immutable _asset; // USDC
     ICompound public immutable cToken; // cUSDC
     IComptroller public immutable comptroller;
     IERC20 public immutable compToken;
-    
+
     uint256 private constant BLOCKS_PER_YEAR = 2102400; // Approximate
     uint256 private constant MANTISSA = 1e18;
     uint256 private constant BASIS_POINTS = 10000;
-    
+
     /*//////////////////////////////////////////////////////////////
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
-    
+
     string public constant strategyName = "CompoundStrategy";
     string public constant protocolName = "Compound Finance";
-    
+
     bool public active = true;
     bool public emergencyMode = false;
-    
+
     uint256 public totalShares;
     mapping(address => uint256) public shares;
-    
+
     // Strategy configuration
-    uint256 public performanceFee = 200; // 2% 
+    uint256 public performanceFee = 200; // 2%
     uint256 public maxSlippage = 50; // 0.5%
     uint256 public lastHarvest;
     uint256 public harvestCooldown = 1 hours;
-    
+
     // Performance tracking
     uint256 public totalDeposited;
     uint256 public totalWithdrawn;
     uint256 public totalHarvested;
-    
+
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
-    
-    event Deposit(address indexed depositor, address indexed receiver, uint256 assets, uint256 shares);
-    event Withdraw(address indexed withdrawer, address indexed receiver, address indexed owner, uint256 assets, uint256 shares);
+
+    event Deposit(
+        address indexed depositor,
+        address indexed receiver,
+        uint256 assets,
+        uint256 shares
+    );
+    event Withdraw(
+        address indexed withdrawer,
+        address indexed receiver,
+        address indexed owner,
+        uint256 assets,
+        uint256 shares
+    );
     event Harvest(uint256 compClaimed, uint256 compSold, uint256 reinvested);
     event EmergencyWithdraw(uint256 amount);
-    event ParameterUpdated(string parameter, uint256 oldValue, uint256 newValue);
-    
+    event ParameterUpdated(
+        string parameter,
+        uint256 oldValue,
+        uint256 newValue
+    );
+
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    
+
     constructor(
-        address _asset,
+        address __asset,
         address _cToken,
         address _comptroller
     ) Ownable(msg.sender) {
-        require(_asset != address(0), "Invalid asset");
+        require(__asset != address(0), "Invalid asset");
         require(_cToken != address(0), "Invalid cToken");
         require(_comptroller != address(0), "Invalid comptroller");
-        
-        asset = IERC20(_asset);
+
+        _asset = IERC20(__asset);
         cToken = ICompound(_cToken);
         comptroller = IComptroller(_comptroller);
         compToken = IERC20(comptroller.getCompAddress());
-        
+
         lastHarvest = block.timestamp;
     }
 
@@ -106,70 +121,69 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
     /**
      * @notice Deposit USDC and mint cUSDC tokens
      */
-    function deposit(uint256 amount, address receiver) 
-        external 
-        override 
-        nonReentrant 
-        returns (uint256 sharesOut) 
-    {
+    function deposit(
+        uint256 amount,
+        address receiver
+    ) external override nonReentrant returns (uint256 sharesOut) {
         require(active && !emergencyMode, "Strategy not active");
         require(amount > 0, "Amount must be > 0");
         require(receiver != address(0), "Invalid receiver");
-        
+
         // Transfer USDC from user
-        asset.safeTransferFrom(msg.sender, address(this), amount);
-        
+        _asset.safeTransferFrom(msg.sender, address(this), amount);
+
         // Calculate shares to mint
-        sharesOut = totalShares == 0 ? amount : (amount * totalShares) / totalAssets();
-        
+        sharesOut = totalShares == 0
+            ? amount
+            : (amount * totalShares) / totalAssets();
+
         // Deposit into Compound
-        asset.forceApprove(address(cToken), amount);
+        _asset.forceApprove(address(cToken), amount);
         uint256 mintResult = cToken.mint(amount);
         require(mintResult == 0, "Compound mint failed");
-        
+
         // Update state
         shares[receiver] += sharesOut;
         totalShares += sharesOut;
         totalDeposited += amount;
-        
+
         emit Deposit(msg.sender, receiver, amount, sharesOut);
     }
 
     /**
      * @notice Withdraw USDC by redeeming cUSDC tokens
      */
-    function withdraw(uint256 sharesIn, address receiver, address owner) 
-        external 
-        override 
-        nonReentrant 
-        returns (uint256 assetsOut) 
-    {
+    function withdraw(
+        uint256 sharesIn,
+        address receiver,
+        address owner
+    ) external override nonReentrant returns (uint256 assetsOut) {
         require(sharesIn > 0, "Shares must be > 0");
         require(receiver != address(0), "Invalid receiver");
-        
+
         // Check authorization
         if (msg.sender != owner) {
             // Add allowance logic if needed
             require(false, "Not authorized");
         }
-        
+
         require(shares[owner] >= sharesIn, "Insufficient shares");
-        
+
         // Calculate assets to withdraw
         assetsOut = (sharesIn * totalAssets()) / totalShares;
-        
+
         // Redeem from Compound
         uint256 redeemResult = cToken.redeemUnderlying(assetsOut);
         require(redeemResult == 0, "Compound redeem failed");
-        
+
         // Update state
         shares[owner] -= sharesIn;
         totalShares -= sharesIn;
         totalWithdrawn += assetsOut;
-        
+
         // Transfer assets to receiver
-        asset.safeTransfer(receiver, assetsOut);
-        
+        _asset.safeTransfer(receiver, assetsOut);
+
         emit Withdraw(msg.sender, receiver, owner, assetsOut, sharesIn);
     }
 
@@ -177,45 +191,49 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
      * @notice Harvest COMP rewards and reinvest
      */
     function harvest() external override returns (uint256 yield) {
-        require(block.timestamp >= lastHarvest + harvestCooldown, "Harvest too frequent");
-        
+        require(
+            block.timestamp >= lastHarvest + harvestCooldown,
+            "Harvest too frequent"
+        );
+
         uint256 compBalanceBefore = compToken.balanceOf(address(this));
-        
+
         // Claim COMP rewards
         comptroller.claimComp(address(this));
-        
-        uint256 compClaimed = compToken.balanceOf(address(this)) - compBalanceBefore;
-        
+
+        uint256 compClaimed = compToken.balanceOf(address(this)) -
+            compBalanceBefore;
+
         if (compClaimed > 0) {
             // Sell COMP for USDC (simplified - would use DEX in production)
             uint256 compSold = _sellCompForUSDC(compClaimed);
-            
+
             // Always emit harvest event, even if no USDC was generated
             emit Harvest(compClaimed, compSold, 0);
-            
+
             if (compSold > 0) {
                 // Take performance fee
                 uint256 fee = (compSold * performanceFee) / BASIS_POINTS;
                 uint256 reinvestAmount = compSold - fee;
-                
+
                 if (fee > 0) {
-                    asset.safeTransfer(owner(), fee);
+                    _asset.safeTransfer(owner(), fee);
                 }
-                
+
                 if (reinvestAmount > 0) {
                     // Reinvest into Compound
-                    asset.forceApprove(address(cToken), reinvestAmount);
+                    _asset.forceApprove(address(cToken), reinvestAmount);
                     cToken.mint(reinvestAmount);
                     totalHarvested += reinvestAmount;
                 }
-                
+
                 yield = reinvestAmount;
             }
         } else {
             // Emit harvest event even if no COMP claimed
             emit Harvest(0, 0, 0);
         }
-        
+
         lastHarvest = block.timestamp;
     }
 
@@ -224,19 +242,19 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
      */
     function emergencyWithdraw() external onlyOwner {
         emergencyMode = true;
-        
+
         // Redeem all cTokens
         uint256 cTokenBalance = cToken.balanceOf(address(this));
         if (cTokenBalance > 0) {
             cToken.redeem(cTokenBalance);
         }
-        
+
         // Transfer all USDC to owner
-        uint256 usdcBalance = asset.balanceOf(address(this));
+        uint256 usdcBalance = _asset.balanceOf(address(this));
         if (usdcBalance > 0) {
-            asset.safeTransfer(owner(), usdcBalance);
+            _asset.safeTransfer(owner(), usdcBalance);
         }
-        
+
         emit EmergencyWithdraw(usdcBalance);
     }
 
@@ -250,7 +268,7 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
     function totalAssets() public view override returns (uint256) {
         uint256 cTokenBalance = cToken.balanceOf(address(this));
         if (cTokenBalance == 0) return 0;
-        
+
         uint256 exchangeRate = cToken.exchangeRateStored();
         return (cTokenBalance * exchangeRate) / MANTISSA;
     }
@@ -261,6 +279,14 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
     function balanceOf(address user) external view override returns (uint256) {
         if (totalShares == 0) return 0;
         return (shares[user] * totalAssets()) / totalShares;
+    }
+
+    /**
+     * @notice Get the underlying asset address
+     * @return Address of the underlying asset
+     */
+    function asset() external view override returns (address) {
+        return address(_asset);
     }
 
     /**
@@ -275,8 +301,21 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
     /**
      * @notice Get strategy information
      */
-    function getStrategyInfo() external view override returns (string memory strategyName_, string memory version, string memory description) {
-        return ("CompoundStrategy", "1.0.0", "Compound Finance USDC lending strategy with COMP rewards");
+    function getStrategyInfo()
+        external
+        pure
+        override
+        returns (
+            string memory strategyName_,
+            string memory version,
+            string memory description
+        )
+    {
+        return (
+            "CompoundStrategy",
+            "1.0.0",
+            "Compound Finance USDC lending strategy with COMP rewards"
+        );
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -299,7 +338,10 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
     }
 
     function updateHarvestCooldown(uint256 _cooldown) external onlyOwner {
-        require(_cooldown >= 10 minutes && _cooldown <= 24 hours, "Invalid cooldown");
+        require(
+            _cooldown >= 10 minutes && _cooldown <= 24 hours,
+            "Invalid cooldown"
+        );
         emit ParameterUpdated("harvestCooldown", harvestCooldown, _cooldown);
         harvestCooldown = _cooldown;
     }
@@ -320,13 +362,15 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
      * @notice Sell COMP tokens for USDC (simplified implementation)
      * @dev In production, this would use a DEX aggregator
      */
-    function _sellCompForUSDC(uint256 compAmount) internal returns (uint256 usdcAmount) {
+    function _sellCompForUSDC(
+        uint256 compAmount
+    ) internal pure returns (uint256 usdcAmount) {
         if (compAmount == 0) return 0;
-        
+
         // Simplified: assume 1 COMP = 50 USDC (would use oracle/DEX in production)
         // This is just for testing purposes
-        usdcAmount = compAmount * 50 / 1e18 * 1e6; // Convert to USDC decimals
-        
+        usdcAmount = ((compAmount * 50) / 1e18) * 1e6; // Convert to USDC decimals
+
         // In production, would execute actual swap here
         // For testing, mint USDC equivalent to the strategy
         if (usdcAmount > 0) {
@@ -334,7 +378,7 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
             // For now, just return 0 to avoid the transfer issue in tests
             return 0;
         }
-        
+
         return usdcAmount;
     }
 
@@ -342,17 +386,21 @@ contract CompoundStrategy is IStrategyV2, ReentrancyGuard, Ownable {
                            PERFORMANCE METRICS
     //////////////////////////////////////////////////////////////*/
 
-    function getPerformanceMetrics() external view returns (
-        uint256 _totalDeposited,
-        uint256 _totalWithdrawn,
-        uint256 _totalHarvested,
-        uint256 _totalShares,
-        uint256 _totalAssets,
-        uint256 _lastHarvest
-    ) {
+    function getPerformanceMetrics()
+        external
+        view
+        returns (
+            uint256 _totalDeposited,
+            uint256 _totalWithdrawn,
+            uint256 _totalHarvested,
+            uint256 _totalShares,
+            uint256 _totalAssets,
+            uint256 _lastHarvest
+        )
+    {
         return (
             totalDeposited,
-            totalWithdrawn, 
+            totalWithdrawn,
             totalHarvested,
             totalShares,
             totalAssets(),

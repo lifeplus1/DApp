@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
+const { loadFixture, time } = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("PortfolioManager - Phase 3 Multi-Strategy Tests", function () {
   // Test fixture for contract deployment
@@ -10,15 +10,19 @@ describe("PortfolioManager - Phase 3 Multi-Strategy Tests", function () {
     // Deploy mock USDC token
     const MockERC20 = await ethers.getContractFactory("MockERC20");
     const usdc = await MockERC20.deploy("USD Coin", "USDC", 6);
+    await usdc.waitForDeployment();
 
     // Deploy mock strategies
     const DummyStrategy = await ethers.getContractFactory("DummyStrategy");
-    const strategy1 = await DummyStrategy.deploy(await usdc.getAddress(), owner.address, owner.address);
-    const strategy2 = await DummyStrategy.deploy(await usdc.getAddress(), owner.address, owner.address);
-    const strategy3 = await DummyStrategy.deploy(await usdc.getAddress(), owner.address, owner.address);
+    const strategy1 = await DummyStrategy.deploy(await usdc.getAddress());
+    const strategy2 = await DummyStrategy.deploy(await usdc.getAddress());
+    const strategy3 = await DummyStrategy.deploy(await usdc.getAddress());
+    await strategy1.waitForDeployment();
+    await strategy2.waitForDeployment();
+    await strategy3.waitForDeployment();
 
     // Deploy PortfolioManager
-    const PortfolioManager = await ethers.getContractFactory("PortfolioManager");
+    const PortfolioManager = await ethers.getContractFactory("contracts/PortfolioManager.sol:PortfolioManagerV1");
     const portfolioManager = await PortfolioManager.deploy(
       await usdc.getAddress(),
       owner.address
@@ -229,14 +233,34 @@ describe("PortfolioManager - Phase 3 Multi-Strategy Tests", function () {
         "Low APY Strategy"
       );
 
-      // Fund the strategies
+      // Fund the strategies on behalf of the PortfolioManager
       await usdc.connect(owner).approve(await strategy1.getAddress(), ethers.parseUnits("6000", 6));
-      await strategy1.connect(owner).deposit(ethers.parseUnits("6000", 6), owner.address);
+      await strategy1.connect(owner).deposit(ethers.parseUnits("6000", 6), await portfolioManager.getAddress());
 
       await usdc.connect(owner).approve(await strategy2.getAddress(), ethers.parseUnits("4000", 6));
-      await strategy2.connect(owner).deposit(ethers.parseUnits("4000", 6), owner.address);
+      await strategy2.connect(owner).deposit(ethers.parseUnits("4000", 6), await portfolioManager.getAddress());
 
+      // Ensure strategies are properly updated
+      await ethers.provider.send("evm_mine", []);
+      
+      // Debug: Check individual strategy APYs and balances
+      const apy1 = await strategy1.getAPY();
+      const apy2 = await strategy2.getAPY();
+      console.log("Strategy 1 APY:", apy1.toString());
+      console.log("Strategy 2 APY:", apy2.toString());
+      
+      // Check PortfolioManager balance in each strategy
+      const pmBalance1 = await strategy1.balanceOf(await portfolioManager.getAddress());
+      const pmBalance2 = await strategy2.balanceOf(await portfolioManager.getAddress());
+      console.log("PortfolioManager balance in strategy 1:", pmBalance1.toString());
+      console.log("PortfolioManager balance in strategy 2:", pmBalance2.toString());
+      
+      // Check total portfolio value
+      const totalPortfolioValue = await portfolioManager.getTotalPortfolioValue();
+      console.log("Total portfolio value:", totalPortfolioValue.toString());
+      
       const weightedAPY = await portfolioManager.calculateWeightedAPY();
+      console.log("Weighted APY:", weightedAPY.toString());
       
       // Should be between the individual strategy APYs
       expect(weightedAPY).to.be.gt(0);
@@ -293,6 +317,9 @@ describe("PortfolioManager - Phase 3 Multi-Strategy Tests", function () {
       // Fund portfolio manager for rebalancing
       await usdc.connect(owner).transfer(await portfolioManager.getAddress(), ethers.parseUnits("2000", 6));
 
+      // Advance time to allow rebalancing (assume 1 hour minimum interval)
+      await time.increase(3600); // 1 hour in seconds
+
       // Perform rebalancing
       await expect(
         portfolioManager.connect(rebalancer).rebalancePortfolio()
@@ -315,6 +342,9 @@ describe("PortfolioManager - Phase 3 Multi-Strategy Tests", function () {
       const { portfolioManager, owner, rebalancer } = await loadFixture(deployPortfolioFixture);
 
       await portfolioManager.connect(owner).addRebalancer(rebalancer.address);
+
+      // Advance time to allow first rebalancing
+      await time.increase(3600); // 1 hour in seconds
 
       // First rebalance
       await portfolioManager.connect(rebalancer).rebalancePortfolio();
@@ -363,7 +393,7 @@ describe("PortfolioManager - Phase 3 Multi-Strategy Tests", function () {
       );
 
       // Add emergency operator
-      await portfolioManager.connect(owner).setVariable("emergencyOperators", emergencyOp.address, true);
+      await portfolioManager.connect(owner).setEmergencyOperator(emergencyOp.address, true);
 
       // Emergency pause strategy
       await expect(
@@ -487,6 +517,9 @@ describe("PortfolioManager - Phase 3 Multi-Strategy Tests", function () {
       // Initial funding
       await usdc.connect(owner).transfer(await portfolioManager.getAddress(), ethers.parseUnits("10000", 6));
 
+      // Advance time to allow rebalancing
+      await time.increase(3600); // 1 hour in seconds
+
       // Rebalance to achieve target allocation
       await portfolioManager.connect(rebalancer).rebalancePortfolio();
 
@@ -497,6 +530,9 @@ describe("PortfolioManager - Phase 3 Multi-Strategy Tests", function () {
       const totalValue = await portfolioManager.getTotalPortfolioValue();
       const weightedAPY = await portfolioManager.calculateWeightedAPY();
       const metrics = await portfolioManager.portfolioMetrics();
+
+      console.log("Total portfolio value:", totalValue.toString());
+      console.log("Weighted APY:", weightedAPY.toString());
 
       expect(totalValue).to.be.gt(0);
       expect(weightedAPY).to.be.gt(0);

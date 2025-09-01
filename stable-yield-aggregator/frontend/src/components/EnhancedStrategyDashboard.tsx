@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
-import { 
-  ArrowTrendingUpIcon, 
-  CurrencyDollarIcon, 
-  ChartBarIcon, 
-  SparklesIcon,
-  ArrowUpIcon,
+import {
   ArrowDownIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  ArrowTrendingUpIcon,
+  ArrowUpIcon,
+  ChartBarIcon,
+  CurrencyDollarIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
+import { BrowserProvider, JsonRpcSigner } from 'ethers';
+import React, { useState } from 'react';
 import useEnhancedStrategy from '../hooks/useEnhancedStrategy';
 
 interface EnhancedStrategyDashboardProps {
   strategyAddress: string;
   vaultAddress: string;
-  provider?: any;
-  signer?: any;
+  provider?: BrowserProvider | null;
+  signer?: JsonRpcSigner | null;
   className?: string;
 }
 
@@ -86,13 +87,13 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
   if (loading && !metrics) {
     return (
       <div className={`bg-white rounded-lg shadow-lg p-6 animate-pulse ${className}`}>
-        <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="w-1/3 h-8 mb-4 bg-gray-200 rounded"></div>
+        <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="h-24 bg-gray-200 rounded"></div>
           ))}
         </div>
-        <div className="h-12 bg-gray-200 rounded w-full"></div>
+        <div className="w-full h-12 bg-gray-200 rounded"></div>
       </div>
     );
   }
@@ -102,7 +103,7 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
       <div className={`bg-red-50 border border-red-200 rounded-lg p-6 ${className}`}>
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <svg className="w-5 h-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
           </div>
@@ -137,8 +138,8 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
-            <SparklesIcon className="h-6 w-6 text-white" />
+          <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500">
+            <SparklesIcon className="w-6 h-6 text-white" />
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900">
@@ -153,7 +154,7 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
         </div>
         <button
           onClick={actions.refreshMetrics}
-          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+          className="p-2 text-gray-400 transition-colors hover:text-gray-600"
           disabled={loading}
           title="Refresh metrics"
         >
@@ -162,8 +163,8 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-4">
+        <div className="p-4 rounded-lg bg-gradient-to-r from-green-50 to-green-100">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-green-600">Current APY</p>
@@ -171,11 +172,11 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
                 {formatAPY(metrics?.currentAPY || '0%')}
               </p>
             </div>
-            <ArrowTrendingUpIcon className="h-8 w-8 text-green-500" />
+            <ArrowTrendingUpIcon className="w-8 h-8 text-green-500" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4">
+        <div className="p-4 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-blue-600">Total Deposits</p>
@@ -183,11 +184,11 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
                 {formatCurrency(metrics?.totalDeposits || '0')}
               </p>
             </div>
-            <CurrencyDollarIcon className="h-8 w-8 text-blue-500" />
+            <CurrencyDollarIcon className="w-8 h-8 text-blue-500" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4">
+        <div className="p-4 rounded-lg bg-gradient-to-r from-purple-50 to-purple-100">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-purple-600">Total Yield</p>
@@ -195,11 +196,11 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
                 {formatCurrency(metrics?.totalYield || '0')}
               </p>
             </div>
-            <ChartBarIcon className="h-8 w-8 text-purple-500" />
+            <ChartBarIcon className="w-8 h-8 text-purple-500" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-4">
+        <div className="p-4 rounded-lg bg-gradient-to-r from-orange-50 to-orange-100">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-orange-600">Harvests</p>
@@ -207,14 +208,14 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
                 {metrics?.harvestCount || '0'}
               </p>
             </div>
-            <SparklesIcon className="h-8 w-8 text-orange-500" />
+            <SparklesIcon className="w-8 h-8 text-orange-500" />
           </div>
         </div>
       </div>
 
       {/* User Balance */}
       {signer && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+        <div className="p-4 mb-6 rounded-lg bg-gray-50">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Your Position</p>
@@ -234,7 +235,7 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
 
       {/* Actions */}
       {signer && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {/* Deposit */}
           <div className="space-y-3">
             <label className="block text-sm font-medium text-gray-700">
@@ -251,9 +252,9 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
               <button
                 onClick={handleDeposit}
                 disabled={!depositAmount || isDepositing}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                className="flex items-center px-4 py-2 space-x-1 text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ArrowUpIcon className="h-4 w-4" />
+                <ArrowUpIcon className="w-4 h-4" />
                 <span>{isDepositing ? 'Depositing...' : 'Deposit'}</span>
               </button>
             </div>
@@ -275,9 +276,9 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
               <button
                 onClick={handleWithdraw}
                 disabled={!withdrawAmount || isWithdrawing}
-                className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                className="flex items-center px-4 py-2 space-x-1 text-white bg-orange-600 rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ArrowDownIcon className="h-4 w-4" />
+                <ArrowDownIcon className="w-4 h-4" />
                 <span>{isWithdrawing ? 'Withdrawing...' : 'Withdraw'}</span>
               </button>
             </div>
@@ -291,9 +292,9 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
             <button
               onClick={handleHarvest}
               disabled={isHarvesting}
-              className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-1"
+              className="flex items-center justify-center w-full px-4 py-2 space-x-1 text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <SparklesIcon className="h-4 w-4" />
+              <SparklesIcon className="w-4 h-4" />
               <span>{isHarvesting ? 'Harvesting...' : 'Harvest Yield'}</span>
             </button>
           </div>
@@ -302,10 +303,10 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
 
       {/* Connection prompt for non-connected users */}
       {!signer && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
           <div className="text-center">
-            <p className="text-blue-800 font-medium">Connect your wallet to interact with the strategy</p>
-            <p className="text-sm text-blue-600 mt-1">
+            <p className="font-medium text-blue-800">Connect your wallet to interact with the strategy</p>
+            <p className="mt-1 text-sm text-blue-600">
               View real-time metrics and manage your position
             </p>
           </div>

@@ -10,14 +10,14 @@ const { ethers } = require("hardhat");
 describe("Centralized FeeController Strategy Integration", function () {
   let owner;
   let underlying, feeController;
-  let aToken, aavePool, aaveStrategy;
+  let aToken, aavePool, aaveStrategy, aaveRewards;
 
   beforeEach(async () => {
   [owner] = await ethers.getSigners();
 
-    // Deploy mock underlying
-    const ERC20Mock = await ethers.getContractFactory("ERC20Mock");
-  underlying = await ERC20Mock.deploy("MockUSD", "mUSD");
+    // Mock underlying asset
+    const ERC20Mock = await ethers.getContractFactory("MockERC20");
+  underlying = await ERC20Mock.deploy("MockUSD", "mUSD", 18);
   await underlying.mint(owner.address, ethers.parseUnits("1000", 18));
 
     // Deploy FeeController
@@ -30,16 +30,23 @@ describe("Centralized FeeController Strategy Integration", function () {
     const MockAavePool = await ethers.getContractFactory("MockAavePool");
   aavePool = await MockAavePool.deploy(underlying.target, aToken.target);
   await aToken.setPool(aavePool.target);
+  
+  // Deploy mock rewards contract
+  const MockAaveRewards = await ethers.getContractFactory("MockAaveRewards");
+  aaveRewards = await MockAaveRewards.deploy(underlying.target); // Use underlying as reward token for simplicity
+  
+  // Fund the rewards contract with tokens so it can pay out rewards
+  await underlying.mint(aaveRewards.target, ethers.parseUnits("1000", 18));
 
-    // Deploy AaveV3Strategy (using mock addresses; debtToken, oracle left as zero for simplicity)
-    const AaveV3Strategy = await ethers.getContractFactory("AaveV3Strategy");
-    aaveStrategy = await AaveV3Strategy.deploy(
+    // Deploy AaveStrategy
+    const AaveStrategy = await ethers.getContractFactory("AaveStrategy");
+    aaveStrategy = await AaveStrategy.deploy(
       underlying.target,
       aavePool.target,
       aToken.target,
-      ethers.ZeroAddress, // debt token not used in simplified test path
-      ethers.ZeroAddress, // oracle not used for fee logic
-      owner.address
+      aaveRewards.target, // Use proper mock rewards contract
+      owner.address, // admin
+      owner.address  // portfolio manager
     );
 
     // Grant manager role to manager signer (admin already owner)
@@ -58,12 +65,17 @@ describe("Centralized FeeController Strategy Integration", function () {
   });
 
   it("harvest collects fee and notifies controller", async () => {
-    // Simulate yield by minting extra aTokens to strategy via mock owner (owner of aToken)
+    // Set up rewards for the strategy
+    await aaveRewards.setUserRewards(aaveStrategy.target, ethers.parseUnits("10", 18));
+    
+    // Simulate yield by minting extra aTokens to strategy
     await aToken.connect(owner).mint(aaveStrategy.target, ethers.parseUnits("50", 18));
 
     const balBefore = await underlying.balanceOf(feeController.target);
-    // Harvest (needs manager role); manager isn't set explicitly so owner (admin) calls
+    
+    // Harvest
     await aaveStrategy.connect(owner).harvest();
+    
     const balAfter = await underlying.balanceOf(feeController.target);
 
     expect(balAfter).to.be.gt(balBefore);

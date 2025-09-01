@@ -10,25 +10,43 @@ import "../interfaces/IStrategyV2.sol";
  * Best practices: View functions for transparency, no state bloat.
  */
 contract DummyStrategy is IStrategyV2 {
-    IERC20 public asset;
+    IERC20 public _asset;
     uint256 public deposited;
     uint256 public yieldAccumulated; // Track accumulated yield
 
-    constructor(IERC20 _asset) {
-        asset = _asset;
+    // Track user balances
+    mapping(address => uint256) private userShares;
+    uint256 public totalShares;
+
+    constructor(IERC20 __asset) {
+        _asset = __asset;
     }
 
-    function deposit(uint256 amount, address user) external override returns (uint256 shares) {
-        asset.transferFrom(msg.sender, address(this), amount);
+    function deposit(
+        uint256 amount,
+        address user
+    ) external override returns (uint256 shares) {
+        _asset.transferFrom(msg.sender, address(this), amount);
         deposited += amount;
-        return amount; // 1:1 shares for simplicity
+        shares = amount; // 1:1 shares for simplicity
+        userShares[user] += shares;
+        totalShares += shares;
+        return shares;
     }
 
-    function withdraw(uint256 shares, address receiver, address owner) external override returns (uint256) {
+    function withdraw(
+        uint256 shares,
+        address receiver,
+        address owner
+    ) external override returns (uint256) {
+        require(userShares[owner] >= shares, "Insufficient shares");
         require(shares <= deposited + yieldAccumulated, "Insufficient balance");
-        
+
         uint256 amount = shares; // 1:1 for simplicity
-        
+
+        userShares[owner] -= shares;
+        totalShares -= shares;
+
         if (amount <= yieldAccumulated) {
             yieldAccumulated -= amount;
         } else {
@@ -36,16 +54,16 @@ contract DummyStrategy is IStrategyV2 {
             deposited -= fromDeposit;
             yieldAccumulated = 0;
         }
-        
-        asset.transfer(receiver, amount);
+
+        _asset.transfer(receiver, amount);
         return amount;
     }
 
     function harvest() external override returns (uint256) {
         // Check if there are extra tokens beyond our deposited amount (external yield)
-        uint256 currentBalance = asset.balanceOf(address(this));
+        uint256 currentBalance = _asset.balanceOf(address(this));
         uint256 expectedBalance = deposited + yieldAccumulated;
-        
+
         uint256 newYield;
         if (currentBalance > expectedBalance) {
             // There's external yield - use the actual extra tokens
@@ -60,16 +78,16 @@ contract DummyStrategy is IStrategyV2 {
                 return 0;
             }
         }
-        
+
         // Transfer fee to the vault (caller)
         if (newYield > 0) {
             uint256 fee = (newYield * 100) / 10000; // 1% fee
-            if (fee > 0 && asset.balanceOf(address(this)) >= fee) {
-                asset.transfer(msg.sender, fee);
+            if (fee > 0 && _asset.balanceOf(address(this)) >= fee) {
+                _asset.transfer(msg.sender, fee);
                 yieldAccumulated -= fee; // Reduce accumulated yield by fee
             }
         }
-        
+
         return newYield;
     }
 
@@ -77,7 +95,7 @@ contract DummyStrategy is IStrategyV2 {
         return deposited + yieldAccumulated;
     }
 
-    function getAPY() external view override returns (uint256) {
+    function getAPY() external pure override returns (uint256) {
         return 500; // 5% APY in basis points
     }
 
@@ -94,12 +112,32 @@ contract DummyStrategy is IStrategyV2 {
     }
 
     function balanceOf(address user) external view override returns (uint256) {
-        // For simplicity, return 0 as this dummy strategy doesn't track individual users
-        return 0;
+        return userShares[user];
     }
 
-    function getStrategyInfo() external pure override returns (string memory strategyName, string memory version, string memory description) {
-        return ("Dummy Strategy", "1.0.0", "A simple mock strategy for testing");
+    /**
+     * @notice Get the underlying asset address
+     * @return Address of the underlying asset
+     */
+    function asset() external view override returns (address) {
+        return address(_asset);
+    }
+
+    function getStrategyInfo()
+        external
+        pure
+        override
+        returns (
+            string memory strategyName,
+            string memory version,
+            string memory description
+        )
+    {
+        return (
+            "Dummy Strategy",
+            "1.0.0",
+            "A simple mock strategy for testing"
+        );
     }
 
     // Function to simulate yield by minting tokens (for testing)

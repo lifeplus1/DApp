@@ -44,26 +44,44 @@ describe("FeeController + DistributionSplitter", function () {
     await token.connect(strategy).transfer(feeController.target, feeAmount);
     await feeController.connect(strategy).notifyFee(token.target, feeAmount);
 
+    // Verify fee controller has the tokens
+    const feeControllerBalance = await token.balanceOf(feeController.target);
+    expect(feeControllerBalance).to.equal(feeAmount);
+    console.log("Fee controller balance before withdraw:", feeControllerBalance.toString());
+
     // Withdraw (forward) fees to splitter
     const balBefore = await token.balanceOf(splitter.target);
     expect(balBefore).to.equal(0n);
 
+    console.log("Calling withdrawFees...");
+    console.log("Strategy address:", strategy.address);
+    console.log("Is strategy registered:", await feeController.isStrategy(strategy.address));
+    console.log("Fee recipient:", await feeController.feeRecipient());
+    console.log("Splitter address:", splitter.target);
+    
+    // Try to see accrued amount for this strategy
+    const accruedAmount = await feeController.accrued(token.target, strategy.address);
+    console.log("Accrued amount for strategy:", accruedAmount.toString());
+    
     await feeController.connect(owner).withdrawFees(token.target);
-    const balAfter = await token.balanceOf(splitter.target);
-    expect(balAfter).to.equal(feeAmount);
+    
+    // FeeController auto-calls distribute(), so check final recipient balances
+    const treasuryBal = await token.balanceOf(treasury.address);
+    const incentivesBal = await token.balanceOf(incentives.address);
+    const devBal = await token.balanceOf(dev.address);
+    const reserveBal = await token.balanceOf(reserve.address);
 
-    // Distribute
-    await splitter.distribute(token.target);
+    // Verify correct distribution percentages
+    expect(treasuryBal).to.equal(feeAmount * 4000n / 10000n);
+    expect(incentivesBal).to.equal(feeAmount * 4000n / 10000n);
+    expect(devBal).to.equal(feeAmount * 1500n / 10000n);
+    expect(reserveBal).to.equal(feeAmount * 500n / 10000n);
 
-    const tBal = await token.balanceOf(treasury.address);
-    const iBal = await token.balanceOf(incentives.address);
-    const dBal = await token.balanceOf(dev.address);
-    const rBal = await token.balanceOf(reserve.address);
-
-    expect(tBal).to.equal(feeAmount * 4000n / 10000n);
-    expect(iBal).to.equal(feeAmount * 4000n / 10000n);
-    expect(dBal).to.equal(feeAmount * 1500n / 10000n);
-    expect(rBal).to.equal(feeAmount * 500n / 10000n);
+    // Verify fee controller and splitter are empty after distribution
+    const feeControllerBalanceFinal = await token.balanceOf(feeController.target);
+    const splitterBalanceFinal = await token.balanceOf(splitter.target);
+    expect(feeControllerBalanceFinal).to.equal(0n);
+    expect(splitterBalanceFinal).to.equal(0n);
   });
 
   it("prevents distribution when not configured properly", async () => {

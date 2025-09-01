@@ -4,7 +4,6 @@
   "description": "Stablecoin Liquidity Pool Aggregator DApp",
   "scripts": {
     "test": "npx hardhat test",
-    "test-enhanced": "npx hardhat test test/EnhancedVault.test.js",
     "deploy-local": "npx hardhat run scripts/deploy-enhanced.js",
     "deploy-sepolia": "npx hardhat run scripts/deploy-enhanced.js --network sepolia",
     "deploy-mainnet": "npx hardhat run scripts/deploy-enhanced.js --network mainnet",

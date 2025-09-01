@@ -9,6 +9,18 @@ dist/
 build/
 out/
 .next/
+**/dist/
+**/build/
+
+# Frontend specific build files
+stable-yield-aggregator/frontend/dist/
+**/frontend/dist/
+**/*bundle*.js
+**/*chunk*.js
+**/*vendor*.js
+**/sw.js
+**/registerSW.js
+**/workbox-*.js
 
 # Hardhat/Foundry artifacts
 stable-yield-aggregator/artifacts/
