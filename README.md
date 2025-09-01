@@ -56,6 +56,7 @@ This repository now contains a **Phase 5.3 enterprise-grade DeFi yield & analyti
 ├── CONTRIBUTING.md              # Contribution standards & workflow
 ├── STYLEGUIDE.md                # (In docs/) Documentation style & formatting rules
 └── .env.example                 # Environment variable reference
+Gas performance artifacts: see `stable-yield-aggregator/gas-reports/` (baseline + latest) and `stable-yield-aggregator/gas-thresholds.json` for per-operation limits.
 ```
 
 ## ⚡ Quick Start

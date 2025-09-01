@@ -74,6 +74,19 @@ jobs:
       - name: Enforce gas thresholds
         run: npm run gas:check
 
+      - name: Upload gas & invariant artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gas-and-invariants
+          path: |
+            stable-yield-aggregator/gas-reports/gas-report.json
+            stable-yield-aggregator/gas-reports/GAS-REPORT.md
+            stable-yield-aggregator/gas-reports/gas-baseline.json
+            stable-yield-aggregator/gas-thresholds.json
+            stable-yield-aggregator/invariant-reports/INVARIANTS-COVERAGE.md
+            stable-yield-aggregator/invariant-reports/invariants-summary.json
+
   freshness-badge:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest

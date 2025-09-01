@@ -1,0 +1,16 @@
+[
+  {
+    "match": "^Deposit",
+    "allowedIncreasePct": 3,
+    "maxGas": 190000
+  },
+  {
+    "match": "^Withdrawal",
+    "allowedIncreasePct": 4,
+    "maxGas": 110000
+  },
+  {
+    "match": "^Harvest",
+    "allowedIncreasePct": 5
+  }
+]
