@@ -4,14 +4,20 @@
   "description": "Stablecoin Liquidity Pool Aggregator DApp",
   "scripts": {
     "test": "npx hardhat test",
-    "deploy-local": "npx hardhat run scripts/deploy-enhanced.js",
-    "deploy-sepolia": "npx hardhat run scripts/deploy-enhanced.js --network sepolia",
-    "deploy-mainnet": "npx hardhat run scripts/deploy-enhanced.js --network mainnet",
+    "test:unit": "npx hardhat test test/*Strategy*.test.js test/*Vault*.test.js",
+    "test:coverage": "npx hardhat coverage",
     "compile": "npx hardhat compile",
+    "deploy-local": "npx hardhat run scripts/deploy-enhanced-strategy.js",
+    "deploy-sepolia": "npx hardhat run scripts/deploy-enhanced-strategy.js --network sepolia",
+    "deploy-mainnet": "npx hardhat run scripts/deploy-mainnet.js --network mainnet",
+    "verify:mainnet": "npx hardhat run scripts/verify-mainnet.js --network mainnet",
+    "deploy:production": "npm run deploy-mainnet && npm run verify:mainnet",
     "clean": "npx hardhat clean",
     "check-config": "npx hardhat run scripts/check-config.js --network sepolia",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "dev": "npx hardhat node",
+    "docs": "echo 'Use ../dev.sh docs for documentation server'"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",

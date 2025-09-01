@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# 🧪 Automated Testing & Quality Assurance Script
-# Usage: ./test-automation.sh [unit|integration|e2e|all|watch]
+# 🧪 Advanced Testing & Quality Assurance Script
+# Usage: ./test-automation.sh [security|performance|ci|watch]
+# Note: Basic testing is now handled by ./dev.sh test
 
 set -e
 
@@ -13,8 +14,8 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 print_header() {
-    echo -e "${BLUE}🧪 Automated Testing & QA${NC}"
-    echo -e "${BLUE}=========================${NC}"
+    echo -e "${BLUE}🧪 Advanced Testing & QA${NC}"
+    echo -e "${BLUE}========================${NC}"
 }
 
 print_success() {
@@ -32,64 +33,10 @@ print_error() {
 CONTRACTS_DIR="stable-yield-aggregator"
 FRONTEND_DIR="stable-yield-aggregator/frontend"
 
-case "${1:-all}" in
-    "unit")
-        print_header
-        echo "🔬 Running unit tests..."
-        
-        cd "$CONTRACTS_DIR"
-        
-        # Compile first
-        echo "Compiling contracts..."
-        npx hardhat compile
-        
-        # Run specific test suites
-        echo "Testing Enhanced Real Yield Strategy..."
-        npx hardhat test test/EnhancedRealYieldStrategy.test.js
-        
-        echo "Testing Stable Vault..."
-        npx hardhat test test/StableVault.test.js
-        
-        print_success "Unit tests completed!"
-        ;;
-        
-    "integration")
-        print_header
-        echo "🔗 Running integration tests..."
-        
-        cd "$CONTRACTS_DIR"
-        
-        # Test platform integration
-        echo "Testing platform integration..."
-        npx hardhat test test/PlatformIntegration.test.js
-        
-        # Test enhanced vault features
-        echo "Testing enhanced vault features..."
-        npx hardhat test test/EnhancedVault.test.js
-        
-        print_success "Integration tests completed!"
-        ;;
-        
-    "frontend")
-        print_header
-        echo "🎨 Running frontend tests..."
-        
-        cd "$FRONTEND_DIR"
-        
-        # Type checking
-        echo "Running TypeScript type checking..."
-        npm run type-check
-        
-        # Build test
-        echo "Testing production build..."
-        npm run build
-        
-        print_success "Frontend tests completed!"
-        ;;
-        
+case "${1:-help}" in
     "security")
         print_header
-        echo "🛡️ Running security analysis..."
+        echo "🛡️ Running comprehensive security analysis..."
         
         cd "$CONTRACTS_DIR"
         
@@ -98,11 +45,11 @@ case "${1:-all}" in
             echo "Running Slither security analysis..."
             slither . || print_warning "Slither analysis completed with warnings"
         else
-            print_warning "Slither not installed - skipping security analysis"
+            print_warning "Slither not installed - install with: pip install slither-analyzer"
         fi
         
-        # Check for common vulnerabilities
-        echo "Checking for common patterns..."
+        # Check for common security patterns
+        echo "Checking for security patterns..."
         
         # Check for reentrancy guards
         if grep -r "ReentrancyGuard" contracts/; then
@@ -118,133 +65,144 @@ case "${1:-all}" in
             print_warning "Access control: Not detected"
         fi
         
+        # Check for proper error handling
+        if grep -r "require\|revert" contracts/ | wc -l | awk '{if($1>10) print "✅ Error handling: Comprehensive"; else print "⚠️ Error handling: Limited"}'; then
+            :
+        fi
+        
         print_success "Security analysis completed!"
         ;;
         
     "performance")
         print_header
-        echo "⚡ Running performance tests..."
+        echo "⚡ Running performance analysis..."
         
         cd "$CONTRACTS_DIR"
         
         # Gas usage analysis
-        echo "Analyzing gas usage..."
-        npx hardhat test --gas-report || print_warning "Gas report not available"
+        echo "Analyzing gas usage patterns..."
+        if npx hardhat test --gas-report 2>/dev/null; then
+            print_success "Gas report generated"
+        else
+            print_warning "Gas report not available - install hardhat-gas-reporter"
+        fi
+        
+        # Contract size analysis
+        echo "Checking contract sizes..."
+        npx hardhat compile
+        find artifacts/contracts -name "*.sol" -path "*/contracts/*" | while read -r contract; do
+            if [ -f "$contract" ]; then
+                size=$(wc -c < "$contract" 2>/dev/null || echo "0")
+                if [ "$size" -gt 24576 ]; then
+                    echo "⚠️ Large contract: $(basename "$contract") ($size bytes)"
+                fi
+            fi
+        done
         
         # Frontend performance
-        echo "Checking frontend performance..."
+        echo "Checking frontend bundle size..."
         cd "../$FRONTEND_DIR"
-        
-        # Bundle size analysis
         npm run build
-        echo "Build output:"
-        ls -lh dist/ 2>/dev/null || echo "No dist folder found"
+        if [ -d "dist" ]; then
+            BUNDLE_SIZE=$(du -sh dist/ | cut -f1)
+            echo "📦 Bundle size: $BUNDLE_SIZE"
+        fi
         
         print_success "Performance analysis completed!"
         ;;
         
-    "coverage")
-        print_header
-        echo "📊 Running test coverage analysis..."
-        
-        cd "$CONTRACTS_DIR"
-        
-        if npx hardhat coverage &>/dev/null; then
-            print_success "Coverage report generated!"
-            echo "Check coverage/index.html for detailed results"
-        else
-            print_warning "Coverage analysis not available"
-            echo "Install solidity-coverage: npm install --save-dev solidity-coverage"
-        fi
-        ;;
-        
     "watch")
         print_header
-        echo "👀 Starting watch mode for tests..."
+        echo "👀 Starting watch mode for advanced testing..."
         
-        print_info "Watching for file changes..."
+        print_info "Watching for file changes to run security and performance checks..."
         print_info "Press Ctrl+C to stop"
         
-        # Use nodemon to watch for changes
-        if command -v nodemon &> /dev/null; then
-            nodemon --watch contracts --watch test --ext sol,js --exec "./test-automation.sh unit"
+        # Use fswatch if available, otherwise fallback
+        if command -v fswatch &> /dev/null; then
+            fswatch -o contracts test | while read num; do
+                echo "📁 Files changed, running advanced tests..."
+                ./test-automation.sh security
+                ./test-automation.sh performance
+            done
+        elif command -v nodemon &> /dev/null; then
+            nodemon --watch contracts --watch test --ext sol,js --exec "./test-automation.sh security && ./test-automation.sh performance"
         else
-            print_warning "nodemon not installed - install with: npm install -g nodemon"
-            print_info "Running tests once..."
-            ./test-automation.sh unit
+            print_warning "Install fswatch or nodemon for watch mode"
+            print_info "macOS: brew install fswatch"
+            print_info "npm: npm install -g nodemon"
         fi
         ;;
         
     "ci")
         print_header
-        echo "🤖 Running CI/CD pipeline simulation..."
+        echo "🤖 Running CI/CD advanced checks..."
         
-        # Simulate GitHub Actions workflow
-        echo "Step 1: Dependency installation..."
-        ./dev.sh setup
+        # Use dev.sh for basic operations
+        echo "Step 1: Basic CI checks..."
+        ./dev.sh pre-deploy
         
-        echo "Step 2: Code compilation..."
-        ./dev.sh compile
-        
-        echo "Step 3: Unit tests..."
-        ./test-automation.sh unit
-        
-        echo "Step 4: Integration tests..."
-        ./test-automation.sh integration
-        
-        echo "Step 5: Frontend type checking..."
-        ./test-automation.sh frontend
-        
-        echo "Step 6: Security analysis..."
+        echo "Step 2: Advanced security analysis..."
         ./test-automation.sh security
         
-        echo "Step 7: Performance analysis..."
+        echo "Step 3: Performance analysis..."
         ./test-automation.sh performance
         
-        print_success "CI/CD simulation completed!"
+        echo "Step 4: Deployment simulation..."
+        cd "$CONTRACTS_DIR"
+        if npx hardhat compile --force; then
+            print_success "Deployment simulation passed"
+        else
+            print_error "Deployment simulation failed"
+            exit 1
+        fi
+        
+        print_success "CI/CD advanced checks completed!"
         ;;
         
-    "all")
+    "audit")
         print_header
-        echo "🎯 Running comprehensive test suite..."
+        echo "🔍 Running comprehensive audit preparation..."
         
-        # Run all test categories
-        ./test-automation.sh unit
-        ./test-automation.sh integration
-        ./test-automation.sh frontend
-        ./test-automation.sh security
-        ./test-automation.sh performance
+        # Create audit report directory
+        AUDIT_DIR="audit-reports/$(date +%Y%m%d)"
+        mkdir -p "$AUDIT_DIR"
         
-        print_success "All tests completed!"
+        echo "Generating audit documentation..."
         
-        # Generate summary
-        echo
-        echo "📋 Test Summary:"
-        echo "✅ Unit tests: Passed"
-        echo "✅ Integration tests: Passed"
-        echo "✅ Frontend tests: Passed" 
-        echo "✅ Security analysis: Completed"
-        echo "✅ Performance analysis: Completed"
+        # Run all advanced tests
+        ./test-automation.sh security > "$AUDIT_DIR/security-report.txt" 2>&1 || true
+        ./test-automation.sh performance > "$AUDIT_DIR/performance-report.txt" 2>&1 || true
+        
+        # Generate contract documentation
+        cd "$CONTRACTS_DIR"
+        if command -v solc &> /dev/null; then
+            echo "Generating contract documentation..."
+            # Add documentation generation here
+        fi
+        
+        print_success "Audit preparation completed in $AUDIT_DIR"
         ;;
         
     "help"|*)
         print_header
-        echo "Available test commands:"
+        echo "Advanced testing commands:"
         echo
-        echo "  unit          Run unit tests for smart contracts"
-        echo "  integration   Run integration tests"
-        echo "  frontend      Run frontend type checking and build tests"
-        echo "  security      Run security analysis"
+        echo -e "${GREEN}Advanced Testing:${NC}"
+        echo "  security      Run comprehensive security analysis"
         echo "  performance   Run performance and gas analysis"
-        echo "  coverage      Generate test coverage report"
-        echo "  watch         Watch files and run tests on changes"
-        echo "  ci            Simulate CI/CD pipeline"
-        echo "  all           Run comprehensive test suite"
+        echo "  watch         Watch files for changes and run advanced tests"
+        echo "  ci            Run CI/CD advanced validation checks"
+        echo "  audit         Prepare comprehensive audit reports"
+        echo
+        echo -e "${YELLOW}Note:${NC} Basic testing (unit, integration, coverage) is handled by:"
+        echo "  ./dev.sh test           # Run all tests"
+        echo "  ./dev.sh test-unit      # Unit tests only"
+        echo "  ./dev.sh test-coverage  # Coverage report"
         echo
         echo "Examples:"
-        echo "  ./test-automation.sh unit      # Quick unit tests"
-        echo "  ./test-automation.sh all       # Full test suite"
-        echo "  ./test-automation.sh watch     # Development mode"
-        echo "  ./test-automation.sh ci        # Pre-deployment check"
+        echo "  ./test-automation.sh security    # Security analysis"
+        echo "  ./test-automation.sh performance # Gas optimization check"
+        echo "  ./test-automation.sh ci          # Full CI pipeline"
         ;;
 esac

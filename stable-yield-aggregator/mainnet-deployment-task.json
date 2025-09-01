@@ -1,0 +1,21 @@
+{
+    "label": "🚀 Deploy to Mainnet - Phase 6 Production",
+    "type": "shell",
+    "command": "npm",
+    "args": [
+        "run",
+        "deploy:mainnet"
+    ],
+    "group": "build",
+    "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new"
+    },
+    "options": {
+        "cwd": "${workspaceFolder}/stable-yield-aggregator"
+    },
+    "problemMatcher": [],
+    "detail": "Deploy Phase 6 production contracts to Ethereum mainnet"
+}

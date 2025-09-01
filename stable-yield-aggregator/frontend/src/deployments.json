@@ -5,22 +5,19 @@
   },
   "deployer": "0x0898eD837a003F11efc212f13591a20cdeffb912",
   "contracts": {
-    "mockUSDC": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-    "liveUniswapV3Strategy": "0x46375e552F269a90F42CE4746D23FA9d347142CB",
-    "enhancedStrategy": "0xD3e7F770403019aFCAE9A554aB00d062e2688348",
-    "stableVault": "0x0AFCE27CA41E84a50144324a2A5762459bF2C487"
-  },
-  "performance": {
-    "currentAPY": "Real Yield",
-    "strategyType": "Live Uniswap V3",
-    "strategyActive": true,
-    "deploymentTime": "2025-08-31T21:35:05.932Z"
+    "mockUSDC": "0xEa9c765aDB5214046d4C69c4B0dF0eE57EA98875",
+    "enhancedStrategy": "0xD2b3FeAE1084E6Da5317345AEB0a30f75cB86041",
+    "stableVault": "0xE169aA1C90f95fCda6166A15f01E1049C7769135",
+    "liveUniswapV3Strategy": "0xD2b3FeAE1084E6Da5317345AEB0a30f75cB86041"
   },
   "phase2": {
     "enabled": true,
-    "liveStrategy": "0x46375e552F269a90F42CE4746D23FA9d347142CB",
-    "realYields": true,
-    "description": "Phase 2: Real Uniswap V3 Strategy Implementation"
+    "liveStrategy": "0xD2b3FeAE1084E6Da5317345AEB0a30f75cB86041"
   },
-  "lastUpdated": "2025-08-31T21:35:05.932Z"
+  "performance": {
+    "currentAPY": "19.04%",
+    "strategyActive": true,
+    "deploymentTime": "2025-09-01T18:34:38.154Z"
+  },
+  "lastUpdated": "2025-09-01T18:34:38.154Z"
 }
