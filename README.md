@@ -141,6 +141,7 @@ This platform includes a comprehensive automation suite for enterprise developme
 - **[Testing Guide](docs/guides/TESTING-GUIDE.md)** - Comprehensive testing procedures
 - **[Next Steps](docs/current/NEXT-STEPS.md)** - Strategic roadmap and planned features
 - **[ADR-0001 Analytics Architecture](docs/adr/ADR-0001-analytics-architecture.md)** - Decision log
+- **[ADR-0005 Fee Model Optimization](docs/adr/ADR-0005-fee-model-optimization-distribution.md)** - Proposed fee controller & distribution architecture
 - **[Project Status](docs/current/PROJECT-STATUS-CONSOLIDATED.md)** - Live contract addresses and project metrics
 
 ---
