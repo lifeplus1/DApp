@@ -17,6 +17,7 @@ import {
   EyeOff,
   Target
 } from 'lucide-react';
+import { useHealthFactor } from '../hooks/useHealthFactor';
 
 // Enhanced interfaces for production-grade portfolio management
 interface PortfolioMetrics {
@@ -188,6 +189,8 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
     overallScore: 8.2
   });
 
+  const { latest: hfLatest } = useHealthFactor('0x0000000000000000000000000000000000000001');
+
   // Calculate portfolio statistics
   const portfolioStats = useMemo(() => {
     const totalAPY = strategies.reduce((acc, strategy) => 
@@ -241,16 +244,16 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50">
       {/* Header Controls */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="sticky top-0 z-50 bg-white border-b border-gray-200">
+        <div className="px-6 py-4 mx-auto max-w-7xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text">
                 Enterprise Portfolio
               </h1>
               
               {/* Timeframe Selector */}
-              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <div className="flex items-center p-1 bg-gray-100 rounded-lg">
                 {timeframeOptions.map((option) => (
                   <button
                     key={option.value}
@@ -260,6 +263,8 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
                         ? 'bg-white text-blue-600 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
+                    aria-label={`Select ${option.label} timeframe`}
+                    title={`View portfolio data for ${option.label}`}
                   >
                     {option.label}
                   </button>
@@ -277,6 +282,7 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
                 title={isPrivacyMode ? 'Show values' : 'Hide values'}
+                aria-label={isPrivacyMode ? 'Show portfolio values' : 'Hide portfolio values'}
               >
                 {isPrivacyMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -289,11 +295,16 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
                 title={autoRefresh ? 'Auto-refresh enabled' : 'Auto-refresh disabled'}
+                aria-label={autoRefresh ? 'Disable auto-refresh' : 'Enable auto-refresh'}
               >
                 <RefreshCw className={`w-4 h-4 ${autoRefresh ? 'animate-spin' : ''}`} />
               </button>
 
-              <button className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors" title="Export data">
+              <button 
+                className="p-2 text-gray-600 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200" 
+                title="Export data"
+                aria-label="Export portfolio data"
+              >
                 <Download className="w-4 h-4" />
               </button>
 
@@ -304,6 +315,8 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
                     ? 'bg-purple-100 text-purple-600' 
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
+                title={showAdvanced ? 'Hide advanced settings' : 'Show advanced settings'}
+                aria-label={showAdvanced ? 'Hide advanced analytics' : 'Show advanced analytics'}
               >
                 <Settings className="w-4 h-4" />
               </button>
@@ -312,12 +325,12 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+      <div className="px-6 py-6 mx-auto space-y-6 max-w-7xl">
         
         {/* Portfolio Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {/* Total Portfolio Value */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-2xl">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-blue-100 rounded-xl">
                 <DollarSign className="w-6 h-6 text-blue-600" />
@@ -332,7 +345,7 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
                 <span>{formatPercentage(portfolioMetrics.dailyChangePercent)}</span>
               </div>
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-1">
+            <h3 className="mb-1 text-3xl font-bold text-gray-900">
               {formatCurrency(portfolioMetrics.totalValue, true)}
             </h3>
             <p className={`text-sm ${portfolioMetrics.dailyChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -341,23 +354,23 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
           </div>
 
           {/* Weighted APY */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-2xl">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-emerald-100 rounded-xl">
                 <TrendingUp className="w-6 h-6 text-emerald-600" />
               </div>
-              <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              <div className="px-2 py-1 text-xs text-gray-500 bg-gray-100 rounded-full">
                 Weighted
               </div>
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-1">
+            <h3 className="mb-1 text-3xl font-bold text-gray-900">
               {portfolioStats.weightedAPY.toFixed(1)}%
             </h3>
             <p className="text-sm text-gray-600">Annual Percentage Yield</p>
           </div>
 
           {/* Portfolio Health */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-2xl">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-green-100 rounded-xl">
                 <Shield className="w-6 h-6 text-green-600" />
@@ -370,25 +383,25 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
                 {portfolioStats.healthyStrategies}/{portfolioStats.strategiesCount}
               </div>
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-1">
+            <h3 className="mb-1 text-3xl font-bold text-gray-900">
               {portfolioStats.avgHealthScore.toFixed(0)}%
             </h3>
             <p className="text-sm text-gray-600">Health Score</p>
           </div>
 
           {/* Risk Score */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-2xl">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-orange-100 rounded-xl">
                 <AlertTriangle className="w-6 h-6 text-orange-600" />
               </div>
               {portfolioStats.rebalanceNeeded && (
-                <div className="text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full">
+                <div className="px-2 py-1 text-xs text-yellow-600 bg-yellow-100 rounded-full">
                   Rebalance
                 </div>
               )}
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-1">
+            <h3 className="mb-1 text-3xl font-bold text-gray-900">
               {riskMetrics.overallScore}/10
             </h3>
             <p className="text-sm text-gray-600">Risk Score</p>
@@ -396,19 +409,27 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
         </div>
 
         {/* Strategy Allocation Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Strategy Allocation List */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="p-6 bg-white border border-gray-200 shadow-sm lg:col-span-2 rounded-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <h2 className="flex items-center text-xl font-semibold text-gray-900">
                 <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
                 Strategy Allocation
               </h2>
               <div className="flex items-center space-x-2">
-                <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                <button 
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                  aria-label="Rebalance portfolio strategies"
+                  title="Rebalance portfolio strategies"
+                >
                   Rebalance
                 </button>
-                <button className="p-1.5 text-gray-400 hover:text-gray-600" title="Filter strategies">
+                <button 
+                  className="p-1.5 text-gray-400 hover:text-gray-600" 
+                  title="Filter strategies"
+                  aria-label="Filter strategies"
+                >
                   <Settings className="w-4 h-4" />
                 </button>
               </div>
@@ -416,10 +437,10 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
 
             <div className="space-y-4">
               {strategies.map((strategy) => (
-                <div key={strategy.id} className="border border-gray-100 rounded-xl p-4 hover:bg-gray-50 transition-colors">
+                <div key={strategy.id} className="p-4 transition-colors border border-gray-100 rounded-xl hover:bg-gray-50">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                      <div className="flex items-center justify-center w-10 h-10 text-sm font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
                         {strategy.symbol.charAt(0)}
                       </div>
                       <div>
@@ -441,11 +462,11 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
 
                   {/* Allocation Progress */}
                   <div className="mb-3">
-                    <div className="flex items-center justify-between text-sm mb-1">
+                    <div className="flex items-center justify-between mb-1 text-sm">
                       <span className="text-gray-600">
                         Allocation: {strategy.allocation}% / {strategy.targetAllocation}%
                       </span>
-                      <span className="text-gray-900 font-medium">
+                      <span className="font-medium text-gray-900">
                         {strategy.apy}% APY
                       </span>
                     </div>
@@ -512,16 +533,16 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
           {/* Portfolio Pie Chart & Quick Actions */}
           <div className="space-y-6">
             {/* Allocation Pie Chart */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-2xl">
+              <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
                 <PieChart className="w-5 h-5 mr-2 text-purple-600" />
                 Allocation Overview
               </h3>
               
               {/* Simple pie chart representation */}
               <div className="relative w-40 h-40 mx-auto mb-4">
-                <div className="w-40 h-40 rounded-full border-8 border-blue-500 bg-gradient-to-r from-blue-500 via-emerald-500 via-amber-500 to-red-500" />
-                <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center">
+                <div className="w-40 h-40 border-8 border-blue-500 rounded-full bg-gradient-to-r from-blue-500 via-emerald-500 to-red-500" />
+                <div className="absolute flex items-center justify-center bg-white rounded-full inset-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold text-gray-900">{strategies.length}</p>
                     <p className="text-xs text-gray-500">Strategies</p>
@@ -549,36 +570,52 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-2xl">
+              <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
                 <Zap className="w-5 h-5 mr-2 text-yellow-600" />
                 Quick Actions
               </h3>
               
               <div className="space-y-3">
-                <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-700 transition-colors">
+                <button 
+                  className="w-full px-4 py-3 font-medium text-white transition-colors bg-blue-600 rounded-xl hover:bg-blue-700"
+                  aria-label="Auto-rebalance portfolio"
+                  title="Automatically rebalance portfolio allocations"
+                >
                   Auto-Rebalance Portfolio
                 </button>
-                <button className="w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-colors">
+                <button 
+                  className="w-full px-4 py-3 font-medium text-gray-900 transition-colors bg-gray-100 rounded-xl hover:bg-gray-200"
+                  aria-label="Manual allocation"
+                  title="Manually adjust portfolio allocations"
+                >
                   Manual Allocation
                 </button>
-                <button className="w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-colors">
+                <button 
+                  className="w-full px-4 py-3 font-medium text-gray-900 transition-colors bg-gray-100 rounded-xl hover:bg-gray-200"
+                  aria-label="Risk assessment"
+                  title="Analyze portfolio risk metrics"
+                >
                   Risk Assessment
                 </button>
-                <button className="w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-colors">
+                <button 
+                  className="w-full px-4 py-3 font-medium text-gray-900 transition-colors bg-gray-100 rounded-xl hover:bg-gray-200"
+                  aria-label="Export report"
+                  title="Export portfolio report"
+                >
                   Export Report
                 </button>
               </div>
 
               {portfolioStats.rebalanceNeeded && (
-                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="p-3 mt-4 border border-yellow-200 rounded-lg bg-yellow-50">
                   <div className="flex items-center space-x-2">
                     <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                    <span className="text-sm text-yellow-800 font-medium">
+                    <span className="text-sm font-medium text-yellow-800">
                       Rebalance Recommended
                     </span>
                   </div>
-                  <p className="text-xs text-yellow-700 mt-1">
+                  <p className="mt-1 text-xs text-yellow-700">
                     Some strategies are off target allocation
                   </p>
                 </div>
@@ -589,10 +626,10 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
 
         {/* Advanced Analytics (Show when enabled) */}
         {showAdvanced && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Risk Metrics */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-2xl">
+              <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
                 <Activity className="w-5 h-5 mr-2 text-red-600" />
                 Risk Analysis
               </h3>
@@ -606,11 +643,11 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
                   'Counterparty Risk': riskMetrics.counterpartyRisk
                 }).map(([label, value]) => (
                   <div key={label}>
-                    <div className="flex justify-between text-sm mb-1">
+                    <div className="flex justify-between mb-1 text-sm">
                       <span className="text-gray-600">{label}</span>
                       <span className="font-medium">{(value * 100).toFixed(1)}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full h-2 bg-gray-200 rounded-full">
                       <div 
                         className={`h-2 rounded-full ${
                           value < 0.2 ? 'bg-green-500' :
@@ -626,29 +663,44 @@ export const EnterprisePortfolioDashboard: React.FC = () => {
             </div>
 
             {/* Performance Metrics */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-2xl">
+              <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
                 <Target className="w-5 h-5 mr-2 text-green-600" />
                 Performance Metrics
               </h3>
               
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 text-center rounded-lg bg-gray-50">
                   <p className="text-2xl font-bold text-gray-900">{portfolioMetrics.sharpeRatio}</p>
                   <p className="text-sm text-gray-600">Sharpe Ratio</p>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 text-center rounded-lg bg-gray-50">
                   <p className="text-2xl font-bold text-gray-900">{portfolioMetrics.sortinoRatio}</p>
                   <p className="text-sm text-gray-600">Sortino Ratio</p>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 text-center rounded-lg bg-gray-50">
                   <p className="text-2xl font-bold text-gray-900">{portfolioMetrics.volatility}%</p>
                   <p className="text-sm text-gray-600">Volatility</p>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 text-center rounded-lg bg-gray-50">
                   <p className="text-2xl font-bold text-gray-900">{formatPercentage(portfolioMetrics.maxDrawdown, false)}</p>
                   <p className="text-sm text-gray-600">Max Drawdown</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Health Factor Telemetry */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <AlertTriangle className="w-5 h-5 mr-2 text-indigo-600" />
+                Health Factor
+              </h3>
+              <div className="text-center">
+                <p className={`text-3xl font-bold ${hfLatest && hfLatest.healthFactor < 1.6 ? 'text-red-600' : 'text-green-600'}`}> 
+                  {hfLatest ? hfLatest.healthFactor.toFixed(2) : '—'}
+                </p>
+                <p className="text-sm text-gray-600 mt-1">Aave Position Safety</p>
+                <p className="text-xs text-gray-500 mt-2">Updated every 30s (simulated)</p>
               </div>
             </div>
           </div>

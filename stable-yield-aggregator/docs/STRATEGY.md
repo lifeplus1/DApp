@@ -115,21 +115,21 @@
 
 ### High Priority
 
-1. **Uniswap V3 Integration** - Highest yield potential
-2. **Testnet Deployment** - Community validation
-3. **Security Audit** - Trust and credibility
+- **Uniswap V3 Integration** - Highest yield potential
+- **Testnet Deployment** - Community validation
+- **Security Audit** - Trust and credibility
 
 ### Medium Priority
 
-1. **Multi-strategy frontend** - Better UX
-2. **Yield comparison dashboard** - Transparency
-3. **Mobile optimization** - Broader access
+- **Multi-strategy frontend** - Better UX
+- **Yield comparison dashboard** - Transparency
+- **Mobile optimization** - Broader access
 
 ### Low Priority
 
-1. **Advanced analytics** - Power user features
-2. **API development** - Third-party integration
-3. **Multi-language support** - Global reach
+- **Advanced analytics** - Power user features
+- **API development** - Third-party integration
+- **Multi-language support** - Global reach
 
 ---
 

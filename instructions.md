@@ -6,27 +6,27 @@ The aggregator contract scans hardcoded pools (extendable to dynamic via oracles
 
 All project files are created below, including a simplified core for MVP (expand strategies for full aggregation). Clone this structure locally, run `npm install` in root and frontend folders.
 
-1. **Setup Project Structure:**
-   - Create root folder: `stable-yield-aggregator`
-   - Subfolders: `contracts/`, `scripts/`, `test/`, `frontend/`, `docs/`
-   - Install dependencies: `npm init -y` then add dev deps via `npm install --save-dev`.
+- **Setup Project Structure:**
+  - Create root folder: `stable-yield-aggregator`
+  - Subfolders: `contracts/`, `scripts/`, `test/`, `frontend/`, `docs/`
+  - Install dependencies: `npm init -y` then add dev deps via `npm install --save-dev`.
 
-2. **Fork Open-Source and Develop Core:**
-   - Adapted Yearn's vault concept into `StableVault.sol` with a dummy strategy for USDC/USDT LP yield (simulates routing to DEX like Uniswap; real fork would clone full repo and modify).
-   - Aggregator logic in vault: Overrides for fee (1% on yields) and routing.
-   - Frontend: React app to connect wallet, view yields, deposit/withdraw.
+- **Fork Open-Source and Develop Core:**
+  - Adapted Yearn's vault concept into `StableVault.sol` with a dummy strategy for USDC/USDT LP yield (simulates routing to DEX like Uniswap; real fork would clone full repo and modify).
+  - Aggregator logic in vault: Overrides for fee (1% on yields) and routing.
+  - Frontend: React app to connect wallet, view yields, deposit/withdraw.
 
-3. **Test:**
-   - Run `npx hardhat test` for unit tests on Sepolia testnet simulation.
-   - Simulate yields with mock assets.
+- **Test:**
+  - Run `npx hardhat test` for unit tests on Sepolia testnet simulation.
+  - Simulate yields with mock assets.
 
-4. **Deploy:**
-   - Use `npx hardhat run scripts/deploy.js --network sepolia` for testnet.
-   - For mainnet, switch network; use MetaMask for tx signing.
-   - Build frontend: `cd frontend && npm run build`, upload dist/ to Pinata/IPFS.
+- **Deploy:**
+  - Use `npx hardhat run scripts/deploy.js --network sepolia` for testnet.
+  - For mainnet, switch network; use MetaMask for tx signing.
+  - Build frontend: `cd frontend && npm run build`, upload dist/ to Pinata/IPFS.
 
-5. **Documentation:**
-   - Included in `README.md` and `STRATEGY.md`.
+- **Documentation:**
+  - Included in `README.md` and `STRATEGY.md`.
 
 **Project Files:**
 
@@ -454,10 +454,10 @@ body {
 Aggregates DEX stablecoin LP pools (e.g., USDC/USDT) for easy yield optimization across chains. Low-risk via stables, high-reward from $5T market.
 
 ## Setup
-1. Clone repo.
-2. `npm install` in root.
-3. `cd frontend && npm install`.
-4. Add .env with RPC URLs and private key (best practice: never commit secrets).
+- Clone repo.
+- `npm install` in root.
+- `cd frontend && npm install`.
+- Add .env with RPC URLs and private key (best practice: never commit secrets).
 
 ## Development
 - Smart contracts: Edit in contracts/; test with `npm test`.

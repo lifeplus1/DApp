@@ -1,0 +1,99 @@
+{
+  "name": "enterprise-defi-platform",
+  "version": "2.0.0",
+  "description": "Enterprise-grade DeFi platform with institutional features",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:production": "tsc && vite build --config vite.production.config.ts",
+    "preview": "vite preview",
+    "preview:production": "vite preview --config vite.production.config.ts",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "deploy:staging": "npm run build && netlify deploy --dir=dist",
+    "deploy:production": "npm run build:production && netlify deploy --prod --dir=dist",
+    "lighthouse": "lhci autorun",
+    "pwa:generate-assets": "pwa-asset-generator logo.svg src/assets/icons --manifest src/manifest.json",
+    "analyze": "npx vite-bundle-analyzer dist/stats.html",
+    "security:scan": "npm audit && snyk test",
+    "performance:test": "lighthouse --output=html --output-path=./lighthouse-report.html http://localhost:4173"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.17",
+    "@types/node": "^20.5.1",
+    "ethers": "^6.7.1",
+    "lucide-react": "^0.427.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "recharts": "^2.8.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.0.3",
+    "autoprefixer": "^10.4.15",
+    "cssnano": "^6.0.1",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "lighthouse": "^11.0.0",
+    "postcss": "^8.4.27",
+    "pwa-asset-generator": "^6.3.1",
+    "tailwindcss": "^3.3.3",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vite-bundle-analyzer": "^0.7.0",
+    "vite-plugin-pwa": "^0.16.7",
+    "vitest": "^0.34.4"
+  },
+  "keywords": [
+    "defi",
+    "ethereum",
+    "yield-farming",
+    "portfolio-management",
+    "typescript",
+    "react",
+    "enterprise",
+    "institutional"
+  ],
+  "author": "Enterprise DeFi Platform",
+  "license": "MIT",
+  "homepage": "https://defi-platform.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/defi-platform/enterprise-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/defi-platform/enterprise-app/issues"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "pwa": {
+    "name": "Enterprise DeFi Platform",
+    "short_name": "DeFi Pro",
+    "description": "Professional-grade DeFi portfolio management",
+    "theme_color": "#1f2937",
+    "background_color": "#ffffff",
+    "display": "standalone",
+    "start_url": "/",
+    "scope": "/",
+    "orientation": "portrait"
+  }
+}
