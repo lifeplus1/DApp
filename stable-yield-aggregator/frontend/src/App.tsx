@@ -13,11 +13,18 @@ import { YieldAnalytics } from './components/YieldAnalytics';
 import { UniswapV3Dashboard } from './components/UniswapV3Dashboard';
 import EnhancedYieldApp from './components/EnhancedYieldApp';
 import Phase53LiveYieldDashboard from './components/Phase53LiveYieldDashboard';
+import AdvancedAnalytics from './components/AdvancedAnalytics';
 
 const DeFiApp: React.FC = () => {
   const { state, actions } = useDeFi();
   const [showEnhanced, setShowEnhanced] = useState(false);
   const [showLiveYield, setShowLiveYield] = useState(false);
+  const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(false);
+
+  // Phase 5.3: Advanced Analytics dashboard
+  if (showAdvancedAnalytics) {
+    return <AdvancedAnalytics />;
+  }
 
   // Phase 5.3: Live yield dashboard
   if (showLiveYield) {
@@ -60,6 +67,14 @@ const DeFiApp: React.FC = () => {
               <span className="text-xl">⚡</span>
               <span>Live Yields (Phase 5.3)</span>
             </button>
+            
+            <button
+              onClick={() => setShowAdvancedAnalytics(true)}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 flex items-center space-x-2"
+            >
+              <span className="text-xl">📈</span>
+              <span>Analytics (Phase 5.3)</span>
+            </button>
           </div>
           
           <div className="mt-2 flex justify-center space-x-4 text-sm flex-wrap">
@@ -71,6 +86,9 @@ const DeFiApp: React.FC = () => {
             </span>
             <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full">
               🚀 Live Yields Ready (Phase 5.3)
+            </span>
+            <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">
+              📈 Advanced Analytics (Phase 5.3)
             </span>
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
               🛡️ Audit-Ready
@@ -118,7 +136,7 @@ const DeFiApp: React.FC = () => {
 
             {/* Advanced Yield Analytics */}
             <div className="mt-8">
-              <YieldAnalytics web3Provider={state.provider} />
+              {state.provider && <YieldAnalytics web3Provider={state.provider} />}
             </div>
 
             {/* Real Uniswap V3 Strategy Dashboard */}
