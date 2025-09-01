@@ -4,14 +4,14 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "../interfaces/IStrategy.sol";
+import "../interfaces/IStrategyV2.sol";
 
 /**
  * @title Enhanced Real Yield Strategy
  * @notice Advanced yield generation with realistic market-based returns
  * @dev Implements multiple yield sources with dynamic APY calculation
  */
-contract EnhancedRealYieldStrategy is IStrategy, Ownable, ReentrancyGuard {
+contract EnhancedRealYieldStrategy is IStrategyV2, Ownable, ReentrancyGuard {
     IERC20 public immutable asset;
     address public immutable vault;
     
@@ -56,11 +56,12 @@ contract EnhancedRealYieldStrategy is IStrategy, Ownable, ReentrancyGuard {
     }
     
     /**
-     * @notice Deposit assets and start generating real yield
-     * @param amount Amount to deposit
-     * @return shares Strategy shares minted
+     * @notice Deposit assets and receive shares
+     * @param amount Amount of assets to deposit
+     * @param user Address of the user making the deposit
+     * @return shares Number of shares minted
      */
-    function deposit(uint256 amount) external override onlyVault nonReentrant returns (uint256 shares) {
+    function deposit(uint256 amount, address user) external override onlyVault nonReentrant returns (uint256 shares) {
         require(amount > 0, "Amount must be > 0");
         require(active, "Strategy is not active");
         
@@ -83,20 +84,65 @@ contract EnhancedRealYieldStrategy is IStrategy, Ownable, ReentrancyGuard {
      * @param amount Amount to withdraw
      * @return withdrawn Actual amount withdrawn
      */
-    function withdraw(uint256 amount) external override onlyVault nonReentrant returns (uint256 withdrawn) {
-        require(amount > 0, "Amount must be > 0");
-        require(amount <= totalAssets(), "Insufficient assets");
-        
-        // Update yield before withdrawal
-        _updateAccruedYield();
-        
-        withdrawn = amount;
-        totalDeposited = totalDeposited >= amount ? totalDeposited - amount : 0;
-        
-        asset.transfer(vault, withdrawn);
-        
-        emit Withdrawal(amount, withdrawn);
-        return withdrawn;
+    /**
+     * @notice Withdraw assets from strategy
+     * @param shares Amount of shares to withdraw
+     * @param receiver Address to receive withdrawn assets
+     * @param owner Address of the owner of the shares
+     * @return assets Amount of assets withdrawn
+     */
+    function withdraw(uint256 shares, address receiver, address owner) external override onlyVault nonReentrant returns (uint256 assets) {
+        require(shares > 0, "Shares must be greater than zero");
+        require(totalDeposited >= shares, "Insufficient balance");
+        require(receiver != address(0), "Invalid receiver");
+        require(owner != address(0), "Invalid owner");
+
+        // For this implementation, we treat shares 1:1 with assets
+        uint256 amount = shares;
+
+        // Calculate the maximum amount we can withdraw
+        uint256 availableBalance = asset.balanceOf(address(this));
+        uint256 actualWithdraw = amount;
+
+        if (availableBalance < amount) {
+            // For this enhanced strategy, we'll limit withdrawals to available balance
+            actualWithdraw = availableBalance;
+        }
+
+        // Ensure we don't withdraw more than deposited
+        if (actualWithdraw > totalDeposited) {
+            actualWithdraw = totalDeposited;
+        }
+
+        totalDeposited -= actualWithdraw;
+        asset.transfer(receiver, actualWithdraw);
+
+        emit Withdrawal(actualWithdraw, actualWithdraw);
+        return actualWithdraw;
+    }
+
+    /**
+     * @notice Get balance of shares for a specific user
+     * @param user Address of the user
+     * @return Balance of shares
+     */
+    function balanceOf(address user) external view override returns (uint256) {
+        // For this implementation, we'll return the total deposited since we don't track individual users
+        // In a production system, you would track individual user balances
+        if (user == address(vault)) {
+            return totalDeposited;
+        }
+        return 0;
+    }
+
+    /**
+     * @notice Get strategy information
+     * @return strategyName Strategy name
+     * @return version Version of the strategy  
+     * @return description Description of the strategy
+     */
+    function getStrategyInfo() external view override returns (string memory strategyName, string memory version, string memory description) {
+        return ("Enhanced Real Yield Strategy", "2.0.0", "Advanced yield generation with realistic market-based returns");
     }
     
     /**
@@ -104,15 +150,19 @@ contract EnhancedRealYieldStrategy is IStrategy, Ownable, ReentrancyGuard {
      * @return yield Amount of yield harvested
      */
     function harvest() external override returns (uint256 yield) {
-        _updateAccruedYield();
-        
-        yield = totalYieldGenerated;
+        // Calculate accrued yield directly
+        yield = _calculateAccruedYield();
         
         if (yield > 0) {
-            totalYieldGenerated = 0;
+            // Add to cumulative tracking
             harvestCount++;
             lastHarvestTime = block.timestamp;
             cumulativeYield += yield;
+            lastUpdateTime = block.timestamp; // Reset the timer
+            
+            // Transfer yield to the caller (vault)
+            require(asset.balanceOf(address(this)) >= yield, "Insufficient balance to harvest");
+            asset.transfer(msg.sender, yield);
             
             emit RealYieldHarvested(yield, block.timestamp);
         }
@@ -153,21 +203,21 @@ contract EnhancedRealYieldStrategy is IStrategy, Ownable, ReentrancyGuard {
     /**
      * @notice Check if strategy is active
      */
-    function isActive() external view override returns (bool) {
+    function isActive() external view returns (bool) {
         return active;
     }
     
     /**
      * @notice Get strategy name
      */
-    function name() external view override returns (string memory) {
+    function name() external view returns (string memory) {
         return "Enhanced Real Yield Strategy";
     }
     
     /**
      * @notice Get total value locked (TVL)
      */
-    function getTVL() external view override returns (uint256) {
+    function getTVL() external view returns (uint256) {
         return totalAssets();
     }
     
@@ -184,6 +234,16 @@ contract EnhancedRealYieldStrategy is IStrategy, Ownable, ReentrancyGuard {
         }
     }
     
+    // Debug function - remove in production  
+    function debugUpdateYield() external returns (uint256 newYield, uint256 totalAfter) {
+        newYield = _calculateAccruedYield();
+        if (newYield > 0) {
+            totalYieldGenerated += newYield;
+            lastUpdateTime = block.timestamp;
+        }
+        totalAfter = totalYieldGenerated;
+    }
+    
     /**
      * @notice Calculate yield accrued since last update
      * @return Accrued yield amount
@@ -198,10 +258,18 @@ contract EnhancedRealYieldStrategy is IStrategy, Ownable, ReentrancyGuard {
         uint256 currentAPY = baseAPY + volatilityBonus + liquidityMiningBonus + tradingFeeAPY;
         
         // Calculate yield: principal * APY * time / (365.25 days * 100% * 100 basis points)
-        uint256 secondsInYear = 365.25 days;
+        uint256 secondsInYear = 31557600; // 365.25 * 24 * 60 * 60 = 31,557,600 seconds
         uint256 yield = (totalDeposited * currentAPY * timeElapsed) / (secondsInYear * 10000);
         
         return yield;
+    }
+    
+    // Debug function to understand yield calculation - remove in production
+    function debugYieldCalculation() external view returns (uint256 deposited, uint256 timeElapsed, uint256 currentAPY, uint256 calculatedYield) {
+        deposited = totalDeposited;
+        timeElapsed = block.timestamp - lastUpdateTime;
+        currentAPY = baseAPY + volatilityBonus + liquidityMiningBonus + tradingFeeAPY;
+        calculatedYield = _calculateAccruedYield();
     }
     
     /**

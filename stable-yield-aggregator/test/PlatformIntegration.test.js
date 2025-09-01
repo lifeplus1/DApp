@@ -18,8 +18,8 @@ describe("Platform Integration Tests", function () {
     await vault.waitForDeployment();
     
     // Deploy Uniswap V3 Strategy with vault address
-    const UniswapV3Strategy = await ethers.getContractFactory("UniswapV3Strategy");
-    const strategy = await UniswapV3Strategy.deploy(usdc.target, vault.target, owner.address);
+    const LiveUniswapV3Strategy = await ethers.getContractFactory("LiveUniswapV3Strategy");
+    const strategy = await LiveUniswapV3Strategy.deploy(usdc.target);
     await strategy.waitForDeployment();
     
     // Set the strategy in the vault

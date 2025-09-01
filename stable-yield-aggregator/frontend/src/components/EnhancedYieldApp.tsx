@@ -2,12 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import EnhancedStrategyDashboard from './EnhancedStrategyDashboard';
 import deployments from '../deployments.json';
-
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
+import '../types/ethereum'; // Import the global ethereum types
 
 const EnhancedYieldApp: React.FC = () => {
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
@@ -147,7 +142,14 @@ const EnhancedYieldApp: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Enhanced Yield Platform</h1>
-                <p className="text-xs text-gray-500">21% Dynamic APY Strategy</p>
+                <div className="flex items-center space-x-2">
+                  <p className="text-xs text-gray-500">Real Uniswap V3 Yields</p>
+                  {deployments.phase2?.enabled && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Phase 2 Active
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -219,17 +221,30 @@ const EnhancedYieldApp: React.FC = () => {
               <span className="text-sm font-medium text-purple-800">BREAKTHROUGH ACHIEVED</span>
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Enhanced Real Yield Strategy
+              {deployments.phase2?.enabled 
+                ? "Real Uniswap V3 Yield Strategy" 
+                : "Enhanced Real Yield Strategy"}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
-              Experience market-leading <span className="font-bold text-green-600">21% dynamic APY</span> with our 
-              breakthrough multi-factor yield generation strategy. Proven <span className="font-semibold">16.76% returns</span> in testing.
+              {deployments.phase2?.enabled ? (
+                <>
+                  Experience <span className="font-bold text-green-600">real Uniswap V3 yields</span> with our 
+                  live liquidity provision strategy. Get <span className="font-semibold">3% base APY + trading fees</span> from actual DeFi protocols.
+                </>
+              ) : (
+                <>
+                  Experience market-leading <span className="font-bold text-green-600">21% dynamic APY</span> with our 
+                  breakthrough multi-factor yield generation strategy. Proven <span className="font-semibold">16.76% returns</span> in testing.
+                </>
+              )}
             </p>
 
             {/* Achievement Badges */}
             <div className="flex flex-wrap justify-center gap-3">
               <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                ✅ 21% Dynamic APY
+                {deployments.phase2?.enabled 
+                  ? "✅ Real Uniswap V3 Yields" 
+                  : "✅ 21% Dynamic APY"}
               </div>
               <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                 🛡️ TypeScript-Safe
@@ -250,10 +265,23 @@ const EnhancedYieldApp: React.FC = () => {
                 <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">📈</span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Market-Leading Returns</h3>
-                <div className="text-3xl font-bold text-green-600 mb-2">21%</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  {deployments.phase2?.enabled ? "Real Protocol Yields" : "Market-Leading Returns"}
+                </h3>
+                <div className="text-3xl font-bold text-green-600 mb-2">
+                  {deployments.phase2?.enabled ? "3%+" : "21%"}
+                </div>
                 <p className="text-sm text-gray-600">
-                  Dynamic APY with multi-factor yield calculation. Proven <strong>16.76%</strong> in testing with realistic compound growth.
+                  {deployments.phase2?.enabled ? (
+                    <>
+                      Base APY from Uniswap V3 liquidity provision plus <strong>trading fees</strong>. 
+                      Real yields from live DeFi protocols.
+                    </>
+                  ) : (
+                    <>
+                      Dynamic APY with multi-factor yield calculation. Proven <strong>16.76%</strong> in testing with realistic compound growth.
+                    </>
+                  )}
                 </p>
               </div>
             </div>
@@ -421,20 +449,28 @@ const EnhancedYieldApp: React.FC = () => {
           <div className="text-center">
             <div className="text-4xl mb-4">🏆</div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Enhanced Real Yield Strategy Platform
+              {deployments.phase2?.enabled 
+                ? "Real Uniswap V3 Yield Platform"
+                : "Enhanced Real Yield Strategy Platform"}
             </h3>
             <p className="text-lg text-gray-600 mb-4">
-              Market-Leading 21% Dynamic APY with Enterprise-Grade Security
+              {deployments.phase2?.enabled
+                ? "Live Uniswap V3 Yields with Enterprise-Grade Security"
+                : "Market-Leading 21% Dynamic APY with Enterprise-Grade Security"}
             </p>
             
             <div className="flex justify-center space-x-8 text-sm text-gray-500 mb-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">21%</div>
-                <div>Peak APY</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {deployments.phase2?.enabled ? "3%+" : "21%"}
+                </div>
+                <div>{deployments.phase2?.enabled ? "Base APY" : "Peak APY"}</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">16.76%</div>
-                <div>Tested Returns</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {deployments.phase2?.enabled ? "Live" : "16.76%"}
+                </div>
+                <div>{deployments.phase2?.enabled ? "Protocol" : "Tested Returns"}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600">100%</div>

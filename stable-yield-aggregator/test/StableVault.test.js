@@ -33,7 +33,7 @@ describe("StableVault", function () {
   it("Should harvest yield with fee", async function () {
     await vault.connect(user).deposit(ethers.parseEther("100"), user.address);
     
-    // Mint yield tokens to strategy to simulate yield generation
+    // Mint yield tokens to strategy to simulate external yield
     await asset.mint(strategy.target, ethers.parseEther("1")); // 1% yield
     
     const initialOwnerBalance = await asset.balanceOf(owner.address);

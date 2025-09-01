@@ -12,14 +12,22 @@ describe("Enhanced Real Yield Strategy", function () {
     usdc = await ERC20Mock.deploy("USDC", "USDC");
     await usdc.waitForDeployment();
     
-    // Deploy Enhanced Real Yield Strategy (without vault for now)
+    // Deploy StableVault first (without strategy initially)
+    const StableVault = await ethers.getContractFactory("StableVault");
+    vault = await StableVault.deploy(await usdc.getAddress(), ethers.ZeroAddress);
+    await vault.waitForDeployment();
+    
+    // Deploy Enhanced Real Yield Strategy with vault address
     const EnhancedRealYieldStrategy = await ethers.getContractFactory("EnhancedRealYieldStrategy");
-    strategy = await EnhancedRealYieldStrategy.deploy(usdc.target, owner.address, owner.address);
+    strategy = await EnhancedRealYieldStrategy.deploy(await usdc.getAddress(), await vault.getAddress(), owner.address);
     await strategy.waitForDeployment();
+    
+    // Set the strategy in the vault
+    await vault.setStrategy(await strategy.getAddress());
 
     // Mint USDC to users for testing
     await usdc.mint(user.address, ethers.parseUnits("10000", 18));
-    await usdc.mint(strategy.target, ethers.parseUnits("1000", 18)); // For strategy operations
+    await usdc.mint(await strategy.getAddress(), ethers.parseUnits("1000", 18)); // For strategy operations
   });
 
   describe("Enhanced Yield Generation", function () {
@@ -37,8 +45,8 @@ describe("Enhanced Real Yield Strategy", function () {
       
       // Deposit funds directly to strategy (as owner)
       await usdc.connect(user).transfer(owner.address, depositAmount);
-      await usdc.connect(owner).approve(strategy.target, depositAmount);
-      await strategy.connect(owner).deposit(depositAmount);
+      await usdc.connect(owner).approve(await strategy.getAddress(), depositAmount);
+      await strategy.connect(owner).deposit(depositAmount, owner.address);
       
       const initialAssets = await strategy.totalAssets();
       console.log(`Initial assets: $${ethers.formatUnits(initialAssets, 18)}`);
@@ -67,15 +75,17 @@ describe("Enhanced Real Yield Strategy", function () {
     it("Should harvest accumulated yield correctly", async function () {
       const depositAmount = ethers.parseUnits("1000", 18);
       
-      await usdc.connect(user).approve(vault.target, depositAmount);
+      await usdc.connect(user).approve(await vault.getAddress(), depositAmount);
       await vault.connect(user).deposit(depositAmount, user.address);
       
       // Fast forward to generate yield
       await ethers.provider.send("evm_increaseTime", [7 * 24 * 60 * 60]); // 1 week
       await ethers.provider.send("evm_mine", []);
       
-      const harvestedYield = await strategy.harvest();
-      console.log(`Harvested yield: $${ethers.formatUnits(harvestedYield, 18)}`);
+      const initialBalance = await usdc.balanceOf(await vault.getAddress());
+      await vault.harvest(); // Call harvest through vault, not directly on strategy
+      const finalBalance = await usdc.balanceOf(await vault.getAddress());
+      const harvestedYield = finalBalance - initialBalance;
       
       expect(harvestedYield).to.be.gt(0);
       
@@ -123,7 +133,7 @@ describe("Enhanced Real Yield Strategy", function () {
       console.log(`Performance Metrics:`);
       console.log(`- Total Deposits: $${ethers.formatUnits(totalDeposits, 18)}`);
       console.log(`- Total Yield: $${ethers.formatUnits(totalYield, 18)}`);
-      console.log(`- Current APY: ${currentAPY / 100}%`);
+      console.log(`- Current APY: ${Number(currentAPY) / 100}%`);
       console.log(`- Harvests Count: ${harvestsCount}`);
       console.log(`- Cumulative Yield: $${ethers.formatUnits(cumulativeYield, 18)}`);
       
@@ -150,7 +160,7 @@ describe("Enhanced Real Yield Strategy", function () {
       );
       
       const newAPY = await strategy.getAPY();
-      console.log(`Updated APY: ${newAPY / 100}%`);
+      console.log(`Updated APY: ${Number(newAPY) / 100}%`);
       
       // New APY should reflect the updated parameters
       expect(newAPY).to.be.gte(newBaseAPY);
@@ -201,7 +211,7 @@ describe("Enhanced Real Yield Strategy", function () {
       await ethers.provider.send("evm_mine", []);
       
       // Harvest yield
-      await vault.harvestYield();
+      await vault.harvest();
       
       // Check user can withdraw with profit
       const userShares = await vault.balanceOf(user.address);
@@ -235,7 +245,7 @@ describe("Enhanced Real Yield Strategy", function () {
       await ethers.provider.send("evm_increaseTime", [30 * 24 * 60 * 60]);
       await ethers.provider.send("evm_mine", []);
       
-      await vault.harvestYield();
+      await vault.harvest();
       
       // Check proportional shares
       const shares1 = await vault.balanceOf(user.address);
@@ -269,10 +279,13 @@ describe("Enhanced Real Yield Strategy", function () {
         
         console.log(`\nMonth ${month}:`);
         console.log(`- Total Assets: $${ethers.formatUnits(totalAssets, 18)}`);
-        console.log(`- Current APY: ${currentAPY / 100}%`);
+        console.log(`- Current APY: ${Number(currentAPY) / 100}%`);
         
         // Harvest monthly
-        const harvestedYield = await strategy.harvest();
+        const initialVaultBalance = await usdc.balanceOf(await vault.getAddress());
+        await strategy.harvest();
+        const finalVaultBalance = await usdc.balanceOf(await vault.getAddress());
+        const harvestedYield = finalVaultBalance - initialVaultBalance;
         console.log(`- Monthly Harvest: $${ethers.formatUnits(harvestedYield, 18)}`);
       }
       

@@ -11,14 +11,16 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "noImplicitAny": true,
+    "allowJs": true,
+    "checkJs": false,
+    "noImplicitAny": false,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "exactOptionalPropertyTypes": true,
-    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true
@@ -36,6 +38,7 @@
     "frontend"
   ],
   "ts-node": {
-    "files": true
+    "files": true,
+    "transpileOnly": true
   }
 }

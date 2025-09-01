@@ -44,7 +44,7 @@ const DeFiApp: React.FC = () => {
               className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 flex items-center space-x-2"
             >
               <span className="text-xl">🚀</span>
-              <span>Experience Enhanced 21% APY Strategy</span>
+              <span>Experience Real Uniswap V3 Yields (Phase 2)</span>
             </button>
           </div>
           

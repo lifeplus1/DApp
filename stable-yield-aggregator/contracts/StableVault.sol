@@ -4,7 +4,7 @@ pragma solidity 0.8.26;
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/IStrategy.sol";
+import "../interfaces/IStrategyV2.sol";
 
 /**
  * @title StableVault
@@ -14,7 +14,7 @@ import "../interfaces/IStrategy.sol";
  * For production, add Chainlink oracle for dynamic pool scanning and multi-strategy routing.
  */
 contract StableVault is ERC4626, Ownable {
-    IStrategy public currentStrategy; // Active strategy for auto-routing.
+    IStrategyV2 public currentStrategy; // Active strategy for auto-routing.
     uint256 public constant FEE_BASIS = 10000; // 100%
     uint256 public constant PERFORMANCE_FEE = 100; // 1% fee on yields.
 
@@ -22,7 +22,7 @@ contract StableVault is ERC4626, Ownable {
     event Harvested(uint256 yield, uint256 fee);
 
     constructor(IERC20 _asset, address initialStrategy) ERC4626(_asset) ERC20("Stable Yield Vault", "SYV") Ownable(msg.sender) {
-        currentStrategy = IStrategy(initialStrategy);
+        currentStrategy = IStrategyV2(initialStrategy);
     }
 
     /**
@@ -31,14 +31,20 @@ contract StableVault is ERC4626, Ownable {
     function _deposit(address caller, address receiver, uint256 assets, uint256 shares) internal virtual override {
         super._deposit(caller, receiver, assets, shares);
         IERC20(asset()).approve(address(currentStrategy), assets);
-        currentStrategy.deposit(assets);
+        currentStrategy.deposit(assets, receiver);
     }
 
     /**
      * @dev Override to withdraw from strategy.
      */
     function _withdraw(address caller, address receiver, address owner, uint256 assets, uint256 shares) internal virtual override {
-        currentStrategy.withdraw(assets);
+        // Calculate shares to withdraw from strategy based on assets
+        uint256 totalStrategyShares = currentStrategy.balanceOf(owner);
+        uint256 sharesToWithdraw = totalStrategyShares > 0 ? (shares * totalStrategyShares) / balanceOf(owner) : 0;
+        
+        if (sharesToWithdraw > 0) {
+            currentStrategy.withdraw(sharesToWithdraw, address(this), owner);
+        }
         super._withdraw(caller, receiver, owner, assets, shares);
     }
 
@@ -46,6 +52,9 @@ contract StableVault is ERC4626, Ownable {
      * @dev Total assets including strategy yields.
      */
     function totalAssets() public view virtual override returns (uint256) {
+        if (address(currentStrategy) == address(0)) {
+            return IERC20(asset()).balanceOf(address(this));
+        }
         return currentStrategy.totalAssets();
     }
 
@@ -56,14 +65,8 @@ contract StableVault is ERC4626, Ownable {
         uint256 yield = currentStrategy.harvest();
         if (yield > 0) {
             uint256 fee = (yield * PERFORMANCE_FEE) / FEE_BASIS;
-            // Transfer yield from strategy to vault first
-            currentStrategy.withdraw(yield);
-            // Then transfer fee to owner
-            IERC20(asset()).transfer(owner(), fee);
-            // Deposit remaining yield back to strategy
-            if (yield > fee) {
-                IERC20(asset()).approve(address(currentStrategy), yield - fee);
-                currentStrategy.deposit(yield - fee);
+            if (fee > 0) {
+                _transferFee(fee);
             }
             emit Harvested(yield, fee);
         }
@@ -73,13 +76,20 @@ contract StableVault is ERC4626, Ownable {
      * @dev Update to best strategy (auto-route logic; in prod, use oracle for yield comparison).
      */
     function setStrategy(address newStrategy) external onlyOwner {
-        uint256 assets = totalAssets();
+        require(newStrategy != address(0), "Invalid strategy address");
+        
+        // If we have assets in the current strategy, migrate them
+        uint256 assets = currentStrategy.balanceOf(address(this));
         if (assets > 0) {
-            currentStrategy.withdraw(assets);
+            // Withdraw from current strategy
+            currentStrategy.withdraw(assets, address(this), address(this));
+            
+            // Deposit to new strategy
+            IERC20(asset()).approve(newStrategy, assets);
+            IStrategyV2(newStrategy).deposit(assets, address(this));
         }
-        currentStrategy = IStrategy(newStrategy);
-        IERC20(asset()).approve(newStrategy, assets);
-        currentStrategy.deposit(assets);
+        
+        currentStrategy = IStrategyV2(newStrategy);
         emit StrategyUpdated(newStrategy);
     }
 
