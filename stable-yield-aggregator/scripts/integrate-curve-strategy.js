@@ -1,5 +1,5 @@
 const { ethers } = require("hardhat");
-const fs = require('fs');
+const _fs = require('fs');
 
 async function main() {
     console.log("🔗 Phase 3: Integrating CurveStableStrategy with PortfolioManager");

@@ -1,4 +1,4 @@
-const hre = require("hardhat");
+const _hre = require("hardhat");
 const { ethers } = require("hardhat");
 
 async function main() {
@@ -42,7 +42,7 @@ async function main() {
             console.log("✅ Strategy already active with proper allocation");
             return;
         }
-    } catch (error) {
+    } catch (_error) {
         console.log("✅ Strategy not found - can add fresh");
     }
 
@@ -101,7 +101,7 @@ async function main() {
             
             console.log(`${i + 1}. ${name}: ${Number(info.targetAllocationBPS)/100}%`);
             totalAllocation += Number(info.targetAllocationBPS);
-        } catch (error) {
+        } catch (_error) {
             console.log(`${i + 1}. ${finalStrategies[i]}: Unable to get info`);
         }
     }

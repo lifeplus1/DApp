@@ -36,7 +36,11 @@ async function main() {
     // Initialize strategy performance
     console.log("\n📍 Step 4: Initializing Strategy...");
     const currentAPY = await strategy.getAPY();
-    const strategyMetrics = await strategy.getStrategyMetrics();
+    const _strategyMetrics = {
+        apy: currentAPY,
+        name: await strategy.name(),
+        isActive: await strategy.isActive()
+    };
     
     console.log("📊 Strategy initialized with:");
     console.log(`   - Current APY: ${Number(currentAPY) / 100}%`);

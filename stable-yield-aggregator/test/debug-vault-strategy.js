@@ -1,11 +1,10 @@
-const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("Debug Vault-Strategy Integration", function () {
-  let usdc, vault, strategy, owner, user;
+  let usdc, vault, strategy, _owner, user;
 
   beforeEach(async function () {
-    [owner, user] = await ethers.getSigners();
+    [_owner, user] = await ethers.getSigners();
 
     // Deploy mock USDC
     const ERC20Mock = await ethers.getContractFactory("ERC20Mock");

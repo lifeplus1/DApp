@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 
 describe("Enhanced Real Yield Strategy - Gas Analysis", function () {
   let usdc, strategy, vault, owner, user;
-  let gasReports = [];
+  const gasReports = [];
 
   beforeEach(async function () {
     [owner, user] = await ethers.getSigners();
@@ -272,7 +272,7 @@ describe("Enhanced Real Yield Strategy - Gas Analysis", function () {
         ethers.parseUnits("100000", 18)
       ];
 
-      let harvestGasUsages = [];
+      const harvestGasUsages = [];
 
       for (let i = 0; i < depositAmounts.length; i++) {
         // Fresh setup for each test

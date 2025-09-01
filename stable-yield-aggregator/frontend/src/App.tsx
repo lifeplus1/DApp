@@ -12,19 +12,21 @@ import {
 import { YieldAnalytics } from './components/YieldAnalytics';
 import { UniswapV3Dashboard } from './components/UniswapV3Dashboard';
 import EnhancedYieldApp from './components/EnhancedYieldApp';
-import IntegrationTestDashboard from './components/IntegrationTestDashboard';
+import Phase53LiveYieldDashboard from './components/Phase53LiveYieldDashboard';
 
 const DeFiApp: React.FC = () => {
   const { state, actions } = useDeFi();
-  const [currentView, setCurrentView] = useState<'main' | 'enhanced' | 'integration'>('main');
+  const [showEnhanced, setShowEnhanced] = useState(false);
+  const [showLiveYield, setShowLiveYield] = useState(false);
 
-  // View switching
-  if (currentView === 'enhanced') {
-    return <EnhancedYieldApp />;
+  // Phase 5.3: Live yield dashboard
+  if (showLiveYield) {
+    return <Phase53LiveYieldDashboard />;
   }
 
-  if (currentView === 'integration') {
-    return <IntegrationTestDashboard />;
+  // Toggle between original and enhanced view
+  if (showEnhanced) {
+    return <EnhancedYieldApp />;
   }
 
   return (
@@ -42,27 +44,33 @@ const DeFiApp: React.FC = () => {
           </p>
           
           {/* Platform Toggle */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
+          <div className="flex justify-center mb-4 space-x-4">
             <button
-              onClick={() => setCurrentView('enhanced')}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 flex items-center justify-center space-x-2"
+              onClick={() => setShowEnhanced(true)}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 flex items-center space-x-2"
             >
               <span className="text-xl">🚀</span>
-              <span>Experience Real Uniswap V3 Yields</span>
+              <span>Enhanced DeFi (Phase 4)</span>
             </button>
             
             <button
-              onClick={() => setCurrentView('integration')}
-              className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 flex items-center justify-center space-x-2"
+              onClick={() => setShowLiveYield(true)}
+              className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-300 flex items-center space-x-2"
             >
-              <span className="text-xl">🧪</span>
-              <span>Phase 5.2 Integration Test</span>
+              <span className="text-xl">⚡</span>
+              <span>Live Yields (Phase 5.3)</span>
             </button>
           </div>
           
-          <div className="mt-2 flex justify-center space-x-4 text-sm">
+          <div className="mt-2 flex justify-center space-x-4 text-sm flex-wrap">
             <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
               ✅ Type-Safe DeFi
+            </span>
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+              ✅ React Optimized (Phase 5.2)
+            </span>
+            <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full">
+              🚀 Live Yields Ready (Phase 5.3)
             </span>
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
               🛡️ Audit-Ready

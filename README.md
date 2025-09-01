@@ -24,12 +24,10 @@ This repository contains a **Phase 3 enterprise-grade DeFi portfolio manager** f
 ## 🚀 Live Platform
 
 - **PortfolioManager**: `0x9189d6926e180F77650020f4fF9b4B9efd0a30C9` (Sepolia)
-- **UniswapV3Strategy**: `0x46375e552F269a90F42CE4746D23FA9d347142CB` (30% allocation)
-- **CurveStableStrategy**: `0x8CFD4548e9E7cb38cA714B188215019A63E9B90f` (30% allocation)
-- **CompoundStrategy**: `0xE1638A4DfB877343D0Bf1CA5899BbEa66440279a` (20% allocation)  
-- **AaveStrategy**: `0xdb240a99aacaDeFFB9e85e700cE6F0e489F8d8e6` (15% allocation)
-- **Architecture Status**: Four-strategy portfolio fully operational
-- **Capital Deployment**: 95% deployed across 4 DeFi protocols
+- **CurveStableStrategy**: `0x8CFD4548e9E7cb38cA714B188215019A63E9B90f` (Sepolia)
+- **LiveUniswapV3Strategy**: Integrated with 60% allocation (Phase 2 contract)
+- **Architecture Status**: Multi-strategy framework operational, pending final integration
+- **Deployment Progress**: 95% complete - one transaction remaining for full activation
 
 ## 📁 Repository Structure
 

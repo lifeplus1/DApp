@@ -14,11 +14,9 @@ async function main() {
   
   // Mock Curve addresses for Sepolia testnet deployment
   const MOCK_CURVE_POOL = "0x0000000000000000000000000000000000000001";
-  const MOCK_CURVE_GAUGE = "0x0000000000000000000000000000000000000002"; 
-  const MOCK_CURVE_3LP = "0x0000000000000000000000000000000000000003";
-  const MOCK_CRV_TOKEN = "0x0000000000000000000000000000000000000004";
-  
-  console.log("\n📋 Deployment Configuration:");
+const _MOCK_CURVE_GAUGE = "0x7ca5b0a2910B33e9759DC7dDB0413949071D7575";
+const _MOCK_CURVE_3LP = "0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7";
+const _MOCK_CRV_TOKEN = "0xD533a949740bb3306d119CC777fa900bA034cd52";  console.log("\n📋 Deployment Configuration:");
   console.log("Asset (USDC):", SEPOLIA_USDC);
   console.log("PortfolioManager:", PORTFOLIO_MANAGER);
   console.log("Curve Pool (Mock):", MOCK_CURVE_POOL);

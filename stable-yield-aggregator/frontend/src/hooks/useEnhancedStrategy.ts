@@ -56,7 +56,7 @@ export const useEnhancedStrategy = ({
   const [userBalance, setUserBalance] = useState<string>('0');
   
   const contractWrapper = new TypeSafeContractWrapper(
-    provider || new ethers.BrowserProvider(window.ethereum as any),
+    provider || new ethers.BrowserProvider(window.ethereum as ethers.Eip1193Provider),
     signer
   );
 
@@ -75,12 +75,12 @@ export const useEnhancedStrategy = ({
       const strategy = contractWrapper.createContract(
         strategyAddress,
         isPhase2 ? LIVE_STRATEGY_ABI : ENHANCED_STRATEGY_ABI
-      ) as any;
+      ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       const vault = contractWrapper.createContract(
         vaultAddress,
         VAULT_ABI
-      ) as any;
+      ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       if (isPhase2) {
         // Phase 2: Use LiveUniswapV3Strategy
@@ -144,9 +144,9 @@ export const useEnhancedStrategy = ({
         setUserBalance(balance);
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load strategy metrics:', err);
-      setError(err.message || 'Failed to load strategy data');
+      setError(err instanceof Error ? err.message : 'Failed to load strategy data');
     } finally {
       setLoading(false);
     }
@@ -168,7 +168,7 @@ export const useEnhancedStrategy = ({
 
     if (isPhase2 && liveStrategyAddress) {
       // Direct strategy deposit for Phase 2
-      const strategy = contractWrapper.createContract(liveStrategyAddress, LiveUniswapV3StrategyABI) as any;
+      const strategy = contractWrapper.createContract(liveStrategyAddress, LiveUniswapV3StrategyABI) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
       const userAddress = await signer.getAddress();
 
       return contractWrapper.safeExecute(async () => {
@@ -183,7 +183,7 @@ export const useEnhancedStrategy = ({
       }, `Depositing ${amount} tokens to Uniswap V3 Strategy`);
     } else {
       // Legacy vault deposit
-      const vault = contractWrapper.createContract(vaultAddress, VAULT_ABI) as any;
+      const vault = contractWrapper.createContract(vaultAddress, VAULT_ABI) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
       const userAddress = await signer.getAddress();
 
       return contractWrapper.safeExecute(async () => {
@@ -211,7 +211,7 @@ export const useEnhancedStrategy = ({
 
     if (isPhase2 && liveStrategyAddress) {
       // Direct strategy withdrawal for Phase 2
-      const strategy = contractWrapper.createContract(liveStrategyAddress, LiveUniswapV3StrategyABI) as any;
+      const strategy = contractWrapper.createContract(liveStrategyAddress, LiveUniswapV3StrategyABI) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
       const userAddress = await signer.getAddress();
 
       return contractWrapper.safeExecute(async () => {
@@ -226,7 +226,7 @@ export const useEnhancedStrategy = ({
       }, `Withdrawing ${amount} tokens from Uniswap V3 Strategy`);
     } else {
       // Legacy vault withdrawal
-      const vault = contractWrapper.createContract(vaultAddress, VAULT_ABI) as any;
+      const vault = contractWrapper.createContract(vaultAddress, VAULT_ABI) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
       const userAddress = await signer.getAddress();
 
       return contractWrapper.safeExecute(async () => {
@@ -254,7 +254,7 @@ export const useEnhancedStrategy = ({
 
     if (isPhase2 && liveStrategyAddress) {
       // Direct strategy harvest for Phase 2
-      const strategy = contractWrapper.createContract(liveStrategyAddress, LiveUniswapV3StrategyABI) as any;
+      const strategy = contractWrapper.createContract(liveStrategyAddress, LiveUniswapV3StrategyABI) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       return contractWrapper.safeExecute(async () => {
         const tx = await strategy.harvest();
@@ -267,7 +267,7 @@ export const useEnhancedStrategy = ({
       }, 'Harvesting Uniswap V3 yield');
     } else if (vaultAddress) {
       // Legacy vault harvest
-      const vault = contractWrapper.createContract(vaultAddress, VAULT_ABI) as any;
+      const vault = contractWrapper.createContract(vaultAddress, VAULT_ABI) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       return contractWrapper.safeExecute(async () => {
         const tx = await vault.harvestYield();

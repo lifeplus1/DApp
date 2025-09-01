@@ -22,9 +22,7 @@ async function main() {
     // Get contract instances
     const portfolioManager = await ethers.getContractAt("PortfolioManager", PORTFOLIO_MANAGER_ADDRESS);
     const aaveStrategy = await ethers.getContractAt("AaveStrategy", AAVE_STRATEGY_ADDRESS);
-    const usdc = await ethers.getContractAt("IERC20", USDC_ADDRESS);
-
-    console.log("\n1️⃣  Current Portfolio State Analysis...");
+        const _usdc = await ethers.getContractAt("IERC20", USDC_ADDRESS);    console.log("\n1️⃣  Current Portfolio State Analysis...");
     
     // Check current portfolio state
     const currentStrategies = await portfolioManager.getActiveStrategies();
@@ -36,7 +34,7 @@ async function main() {
             const info = await portfolioManager.getStrategyInfo(currentStrategies[i]);
             console.log(`- Strategy ${i + 1}: ${info.targetAllocationBPS/100n}% allocation`);
             totalAllocation += info.targetAllocationBPS;
-        } catch (error) {
+        } catch (_error) {
             console.log(`- Strategy ${i + 1}: Unable to get info`);
         }
     }
@@ -75,7 +73,7 @@ async function main() {
         await portfolioManager.getStrategyInfo(AAVE_STRATEGY_ADDRESS);
         strategyAlreadyAdded = true;
         console.log("⚠️  AaveStrategy is already added to portfolio");
-    } catch (error) {
+    } catch (_error) {
         console.log("✅ AaveStrategy not yet in portfolio - proceeding with addition");
     }
 
@@ -92,9 +90,9 @@ async function main() {
             console.log("✅ AaveStrategy added successfully!");
             console.log("Gas used:", receipt.gasUsed.toString());
             
-        } catch (error) {
-            console.error("❌ Failed to add AaveStrategy:", error.message);
-            throw error;
+        } catch (_error) {
+            console.error("❌ Failed to add AaveStrategy:", _error.message);
+            throw _error;
         }
     }
 
@@ -112,7 +110,7 @@ async function main() {
             const [name] = await strategyContract.getStrategyInfo();
             console.log(`- ${name}: ${info.targetAllocationBPS/100n}% (${updatedStrategies[i]})`);
             newTotalAllocation += info.targetAllocationBPS;
-        } catch (error) {
+        } catch (_error) {
             console.log(`- Strategy ${i + 1}: ${updatedStrategies[i]} (info unavailable)`);
         }
     }
@@ -136,7 +134,7 @@ async function main() {
     try {
         const apy = await aaveStrategy.getAPY();
         console.log("Strategy APY:", Number(apy)/100, "%");
-    } catch (error) {
+    } catch (_error) {
         console.log("APY:", "Unable to fetch (expected for new strategy)");
     }
 

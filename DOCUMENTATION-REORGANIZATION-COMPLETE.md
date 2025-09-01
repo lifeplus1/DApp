@@ -127,7 +127,7 @@ Professional technical documentation for developers:
 
 1. Start with **[Platform Overview](docs/current/PLATFORM-OVERVIEW.md)**
 2. Follow **[Live Testing Guide](docs/current/LIVE-TESTING-GUIDE.md)**
-3. Check **[Deployment Status](docs/current/DEPLOYMENT-STATUS.md)** for contract addresses
+3. Check **[Project Status](docs/current/PROJECT-STATUS-CONSOLIDATED.md)** for contract addresses
 
 ### For Developers
 

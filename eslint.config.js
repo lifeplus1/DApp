@@ -67,6 +67,7 @@ export default tseslint.config(
     files: ['**/*.{js,mjs,cjs}', '**/scripts/**/*', '**/test/**/*', '**/*.config.*', '**/hardhat.config.*'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off', // Allow require() in Node.js files
+      '@typescript-eslint/no-unused-expressions': 'off', // Allow expect() chains in tests
     },
   },
   // Ignore patterns
@@ -76,6 +77,9 @@ export default tseslint.config(
       'dist/',
       'build/',
       'coverage/',
+      'coverage/**/*',
+      'stable-yield-aggregator/coverage/',
+      'stable-yield-aggregator/coverage/**/*',
       '*.min.js',
       'stable-yield-aggregator/artifacts/',
       'stable-yield-aggregator/cache/',
@@ -83,6 +87,8 @@ export default tseslint.config(
       '.next/',
       '.vite/',
       '.turbo/',
+      '**/*.min.js',
+      '**/lcov-report/**',
     ],
   }
 )
