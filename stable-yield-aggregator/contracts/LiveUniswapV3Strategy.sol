@@ -137,23 +137,23 @@ contract LiveUniswapV3Strategy is IStrategyV2, Ownable, ReentrancyGuard {
     
     function getAPY() external view returns (uint256 apy) {
         if (feeHistory.length < 2 || totalShares == 0) {
-            return 800; // 8% baseline APY for new strategies
+            return 1200; // 12% baseline APY for new strategies
         }
         
         uint256 recentFees = feeHistory[feeHistory.length - 1];
         uint256 timeElapsed = feeTimestamps[feeTimestamps.length - 1] - feeTimestamps[feeTimestamps.length - 2];
         
         if (timeElapsed == 0 || recentFees == 0) {
-            return 800; // 8% baseline APY when no recent activity
+            return 1200; // 12% baseline APY when no recent activity
         }
         
         uint256 totalValue = _getTotalValue();
-        if (totalValue == 0) return 800; // 8% baseline APY
+        if (totalValue == 0) return 1200; // 12% baseline APY
         
         apy = (recentFees * 365 days * 10000) / (totalValue * timeElapsed);
         
         if (apy > 5000) apy = 5000; // Cap at 50%
-        if (apy < 500) apy = 800; // Minimum 8% for stable strategies
+        if (apy < 1000) apy = 1200; // Minimum 12% for stable strategies
     }
     
     function balanceOf(address user) external view returns (uint256 balance) {

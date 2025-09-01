@@ -10,7 +10,9 @@
     "deploy-mainnet": "npx hardhat run scripts/deploy-enhanced.js --network mainnet",
     "compile": "npx hardhat compile",
     "clean": "npx hardhat clean",
-    "check-config": "npx hardhat run scripts/check-config.js --network sepolia"
+    "check-config": "npx hardhat run scripts/check-config.js --network sepolia",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",

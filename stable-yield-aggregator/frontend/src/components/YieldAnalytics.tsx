@@ -73,8 +73,8 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
         console.log('Best strategy call failed (expected in current setup)');
       }
       
-    } catch (error) {
-      console.error('Error fetching strategy metrics:', error);
+    } catch (_error) {
+      console.error('Error fetching yield data:', _error);
     } finally {
       setLoading(false);
     }

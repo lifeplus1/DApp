@@ -50,9 +50,9 @@ async function main() {
       console.log("   Name:", strategyInfo[0]);
       console.log("   Version:", strategyInfo[1]);
       console.log("   Token:", await strategy.token());
-    } catch (verifyError) {
-      console.warn("⚠️  Could not verify immediately, contract may need more time");
-    }
+    } catch (_verifyError) {
+            console.log("Contract verification failed, but deployment was successful");
+        }
 
     console.log("\n🎉 SEPOLIA DEPLOYMENT COMPLETE!");
     console.log("================================");

@@ -69,9 +69,9 @@ contract StableVault is ERC4626, Ownable {
                     // For LiveUniswapV3Strategy: calculate actual shares to withdraw
                     amountToWithdraw = (vaultSharesInStrategy * shares) / vaultTotalShares;
                 } else {
-                    // For DummyStrategy and others: calculate proportional assets
-                    uint256 strategyTotalAssets = currentStrategy.totalAssets();
-                    amountToWithdraw = (strategyTotalAssets * shares) / vaultTotalShares;
+                    // For DummyStrategy, EnhancedRealYieldStrategy and others: use actual token balance (avoid virtual accounting inflation)
+                    uint256 strategyTokenBalance = IERC20(asset()).balanceOf(address(currentStrategy));
+                    amountToWithdraw = (strategyTokenBalance * shares) / vaultTotalShares;
                 }
                 
                 if (amountToWithdraw > 0) {
@@ -89,14 +89,25 @@ contract StableVault is ERC4626, Ownable {
      * @dev Total assets including strategy yields.
      */
     function totalAssets() public view virtual override returns (uint256) {
+        // Include both assets currently idle in the vault and those deployed in the strategy
+        uint256 vaultIdle = IERC20(asset()).balanceOf(address(this));
         if (address(currentStrategy) == address(0)) {
-            return IERC20(asset()).balanceOf(address(this));
+            return vaultIdle;
         }
-        
-        // For ERC4626 compliance, totalAssets should represent what can actually be withdrawn
-        // The strategy's totalAssets() includes unrealized position value that can't be withdrawn immediately
-        // For now, return the actual token balance that can be withdrawn
-        return IERC20(asset()).balanceOf(address(currentStrategy));
+    // Strategy handling:
+    // - LiveUniswapV3Strategy: use raw token balance (positions may include unrealized value)
+    // - EnhancedRealYieldStrategy: strategy.totalAssets() returns principal + projected realizable; we instead
+    //   count only the token balance sitting in the strategy (unharvested yield is unrealized and excluded)
+        uint256 stratBalance;
+        bool isLive = false;
+        try ILiveUniswapV3Strategy(address(currentStrategy)).userShares(address(this)) returns (uint256) {
+            isLive = true;
+        } catch {
+            isLive = false;
+        }
+    // Use raw balance for both strategy types to avoid double counting projected accruals.
+    stratBalance = IERC20(asset()).balanceOf(address(currentStrategy));
+        return vaultIdle + stratBalance;
     }
 
     /**

@@ -138,7 +138,7 @@ async function main() {
                     const info = await portfolio.getStrategyInfo(strategies[i]);
                     console.log(`- ${info.name}: ${info.targetAllocationBPS/100}%`);
                 }
-            } catch (e) {
+            } catch (_e) {
                 console.log("Could not retrieve portfolio state");
             }
         } else {

@@ -92,7 +92,7 @@ async function main() {
             try {
                 const info = await portfolio.getStrategyInfo(compoundStrategyAddress);
                 console.log("Existing strategy allocation:", info.targetAllocationBPS.toString(), "basis points");
-            } catch (e) {
+            } catch (_e) {
                 console.log("Strategy not found in portfolio");
             }
         }

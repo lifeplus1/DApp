@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
-import { DeFiProvider } from './contexts/DeFiContext';
+import { DeFiProvider, useDeFi } from './contexts/DeFiContext';
 import { 
   WalletConnector, 
   BalanceCard, 
@@ -12,7 +12,6 @@ import {
 import { YieldAnalytics } from './components/YieldAnalytics';
 import { UniswapV3Dashboard } from './components/UniswapV3Dashboard';
 import EnhancedYieldApp from './components/EnhancedYieldApp';
-import { useDeFi } from './contexts/DeFiContext';
 
 const DeFiApp: React.FC = () => {
   const { state, actions } = useDeFi();
