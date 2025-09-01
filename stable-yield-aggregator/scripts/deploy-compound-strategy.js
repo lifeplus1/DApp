@@ -10,8 +10,8 @@ async function main() {
     
     // Sepolia testnet addresses
     const USDC_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // Sepolia USDC
-    const CUSDC_ADDRESS = "0x1A61A1a2d4FC47c2E7F0d9Fff8a1CC8A91b4E8a0"; // Sepolia cUSDC (example)
-    const COMPTROLLER_ADDRESS = "0x0D8D9D4DC0f7E0d8b0D8C9d5E8C6F7A2B3E1F5C4"; // Sepolia Comptroller (example)
+    const CUSDC_ADDRESS = "0x70e36f6BF80a52b3B46b3aF8e106CC0ed743E8e4"; // Compound V2 cUSDC on Sepolia
+    const COMPTROLLER_ADDRESS = "0x627EA49279FD0dE89186A58b8758aD02B6Be2867"; // Compound V2 Comptroller on Sepolia
     
     console.log("\n📋 Contract Addresses:");
     console.log("USDC:", USDC_ADDRESS);

@@ -22,10 +22,10 @@ contract EnhancedRealYieldStrategy is IStrategyV2, Ownable, ReentrancyGuard {
     uint256 public lastHarvestTime;
     
     // Market-based yield configuration
-    uint256 public baseAPY = 800; // 8% base APY (in basis points)
-    uint256 public volatilityBonus = 400; // 4% additional from volatility
-    uint256 public liquidityMiningBonus = 300; // 3% from liquidity mining rewards
-    uint256 public tradingFeeAPY = 200; // 2% from trading fees
+    uint256 public baseAPY = 300; // 3% base APY (in basis points) - more realistic
+    uint256 public volatilityBonus = 100; // 1% additional from volatility
+    uint256 public liquidityMiningBonus = 150; // 1.5% from liquidity mining rewards  
+    uint256 public tradingFeeAPY = 50; // 0.5% from trading fees
     
     // Performance tracking
     uint256 public cumulativeYield;

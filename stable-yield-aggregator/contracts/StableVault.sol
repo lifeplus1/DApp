@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.26;
+pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "../interfaces/IStrategyV2.sol";
+import "../interfaces/ILiveUniswapV3Strategy.sol";
 
 /**
  * @title StableVault
@@ -38,53 +40,63 @@ contract StableVault is ERC4626, Ownable {
     /**
      * @dev Override to withdraw from strategy.
      */
+    // Debug event
+    event DebugWithdrawal(uint256 sharesToWithdraw, uint256 strategyTotalAssets, uint256 vaultSharesInStrategy, uint256 vaultBalanceBefore, uint256 vaultBalanceAfter);
+
     function _withdraw(address caller, address receiver, address owner, uint256 assets, uint256 shares) internal virtual override {
-        // TEMPORARY FIX: Simplified approach for testing
+        // Remove overly strict validation - ERC4626 already handles this
+        uint256 vaultBalanceBefore = IERC20(asset()).balanceOf(address(this));
+        
+        // SIMPLIFIED APPROACH: For current testing, make reasonable assumptions
         if (address(currentStrategy) != address(0) && shares > 0) {
             uint256 vaultTotalShares = totalSupply();
             
             if (vaultTotalShares > 0) {
-                // For our current test scenarios, the vault is typically the only user
-                // So if user is withdrawing 100% of vault shares (shares == vaultTotalShares),
-                // we should withdraw 100% of our strategy holding
+                // Check if this is a LiveUniswapV3Strategy by trying to access userShares
+                bool isLiveStrategy = false;
+                uint256 vaultSharesInStrategy = 0;
                 
-                if (shares == vaultTotalShares) {
-                    // Withdrawing everything - get all our strategy balance
-                    uint256 strategyBalance = currentStrategy.balanceOf(address(this));
-                    if (strategyBalance > 0) {
-                        // Convert strategy balance (value) back to shares for withdrawal
-                        // For many strategies, this is approximately the original deposited amount
-                        uint256 strategyTotalValue = currentStrategy.totalAssets();
-                        if (strategyTotalValue > 0) {
-                            // Proportionally withdraw: (our_balance / total_value) * total_value = our_balance
-                            // But we need shares, so approximate as: our_balance / 2 (since yield doubles value)
-                            uint256 estimatedShares = strategyBalance / 2;
-                            if (estimatedShares > 0) {
-                                currentStrategy.withdraw(estimatedShares, address(this), address(this));
-                            }
-                        }
-                    }
-                } else {
-                    // Partial withdrawal - use proportional approach
-                    uint256 strategyBalance = currentStrategy.balanceOf(address(this));
-                    uint256 proportionalAmount = (strategyBalance * shares) / (vaultTotalShares * 2); // Divide by 2 for yield
-                    if (proportionalAmount > 0) {
-                        currentStrategy.withdraw(proportionalAmount, address(this), address(this));
-                    }
+                try ILiveUniswapV3Strategy(address(currentStrategy)).userShares(address(this)) returns (uint256 userShares) {
+                    isLiveStrategy = true;
+                    vaultSharesInStrategy = userShares;
+                } catch {
+                    isLiveStrategy = false;
                 }
+                
+                uint256 amountToWithdraw;
+                
+                if (isLiveStrategy) {
+                    // For LiveUniswapV3Strategy: calculate actual shares to withdraw
+                    amountToWithdraw = (vaultSharesInStrategy * shares) / vaultTotalShares;
+                } else {
+                    // For DummyStrategy and others: calculate proportional assets
+                    uint256 strategyTotalAssets = currentStrategy.totalAssets();
+                    amountToWithdraw = (strategyTotalAssets * shares) / vaultTotalShares;
+                }
+                
+                if (amountToWithdraw > 0) {
+                    currentStrategy.withdraw(amountToWithdraw, address(this), address(this));
+                }
+                
+                uint256 vaultBalanceAfter = IERC20(asset()).balanceOf(address(this));
+                
+                // Debug event
+                emit DebugWithdrawal(amountToWithdraw, currentStrategy.totalAssets(), vaultSharesInStrategy, vaultBalanceBefore, vaultBalanceAfter);
             }
         }
         super._withdraw(caller, receiver, owner, assets, shares);
-    }
-
-    /**
+    }    /**
      * @dev Total assets including strategy yields.
      */
     function totalAssets() public view virtual override returns (uint256) {
         if (address(currentStrategy) == address(0)) {
             return IERC20(asset()).balanceOf(address(this));
         }
-        return currentStrategy.totalAssets();
+        
+        // For ERC4626 compliance, totalAssets should represent what can actually be withdrawn
+        // The strategy's totalAssets() includes unrealized position value that can't be withdrawn immediately
+        // For now, return the actual token balance that can be withdrawn
+        return IERC20(asset()).balanceOf(address(currentStrategy));
     }
 
     /**

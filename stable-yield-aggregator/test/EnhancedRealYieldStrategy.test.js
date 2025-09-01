@@ -251,6 +251,13 @@ describe("Enhanced Real Yield Strategy", function () {
       const shares1 = await vault.balanceOf(user.address);
       const shares2 = await vault.balanceOf(user2.address);
       
+      console.log(`User1 shares: ${ethers.formatUnits(shares1, 18)}`);
+      console.log(`User2 shares: ${ethers.formatUnits(shares2, 18)}`);
+      
+      // Avoid division by zero
+      expect(shares1).to.be.gt(0);
+      expect(shares2).to.be.gt(0);
+      
       const ratio = Number(shares1) / Number(shares2);
       expect(ratio).to.be.closeTo(2, 0.1); // User1 should have ~2x shares
     });

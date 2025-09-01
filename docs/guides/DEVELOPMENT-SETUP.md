@@ -112,7 +112,7 @@ module.exports = {
 
 ## 📦 Project Structure
 
-```
+text
 stable-yield-aggregator/
 ├── contracts/                 # Smart contracts
 │   ├── StableVault.sol       # Main vault contract
@@ -131,7 +131,8 @@ stable-yield-aggregator/
 ├── test/                   # Test files
 ├── typechain-types/        # Generated contract types
 └── docs/                   # Documentation
-```
+
+```text
 
 ## 🧪 Testing Setup
 
@@ -348,4 +349,4 @@ npm run dev
 
 **Ready to build the future of DeFi with type safety and professional architecture!**
 
-*Last Updated: August 31, 2025*
+#### Last Updated: August 31, 2025
