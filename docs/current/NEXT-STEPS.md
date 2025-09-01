@@ -1,8 +1,154 @@
-# 🚀 NEXT STEPS - Phase 5.3 Strategic Plan (UPDATED: September 1, 2025)
+# 🚀 NEXT STEPS - Phase 6 Roadmap (Last updated: 2025-09-01)
 
-## 🎯 Current Status: Phase 5.3 - Advanced DeFi Features Development
+## 🎯 Context
 
-Your Enhanced DeFi Platform has successfully completed **Phase 5.2 React Component Improvements** with exceptional results! All React optimizations are now operational with enterprise-grade performance. Here's the updated strategic roadmap:
+Phase 5.3 (Advanced Analytics & Live Yield) is COMPLETE. The platform now shifts to **Phase 6: Production Launch & Aave Finalization** with emphasis on audit readiness, automation, and risk hardening.
+
+Authoritative status & metrics: `PROJECT-STATUS-CONSOLIDATED.md`.
+
+---
+
+## 🧭 Phase 6 Core Objectives
+
+| Pillar | Objective | Success Criteria | ETA |
+|--------|-----------|------------------|-----|
+| Strategy Expansion | Integrate & allocate AaveStrategy | Stable 5–10% allocation passing integration tests | Week 1 |
+| Audit Readiness | Finalize invariants + security checklist | All critical invariants scripted & passing | Week 2 |
+| Gas & Size | Benchmark hot paths (deposit/redeem/rebalance) | Report + >=15% savings opportunities documented | Week 2 |
+| Automation | Docs + address + timestamp CI | CI job passes; zero broken links | Week 1 |
+| Observability | Add structured logging + basic health metrics | Error rate panel + latency log fields | Week 2 |
+| Frontend Hardening | Edge-case analytics tests | 90%+ coverage for analytics modules | Week 2 |
+| Governance | ADR cadence + CHANGELOG discipline | ADR-0002/0003 merged; version tags for releases | Ongoing |
+| Launch Prep | Mainnet readiness & rollback plan | Runbook approved & tested | Week 3 |
+
+---
+
+## � Aave Integration Plan
+
+1. Implement `AaveStrategy` borrowing & supply logic (mock rates first)
+2. Add unit tests: deposit/withdraw/APY calculation, pause, reentrancy guard
+3. Wire into `PortfolioManager` with provisional 5% allocation
+4. Run integration rebalancing test matrix (target ±0.5% drift tolerance)
+5. Promote allocation to target range once stable & gas profile acceptable
+
+Risk Notes: Monitor health factor thresholds; add invariant preventing unsafe collateralization.
+
+---
+
+## 🔐 Audit Readiness & Security Hardening
+
+| Area | Task | Owner | Status |
+|------|------|-------|--------|
+| Invariants | Formalize share accounting, pause enforcement, strategy balance monotonicity | EngSec | PENDING |
+| Threat Model | Update `SECURITY-OVERVIEW.md` with Aave-specific risks | EngSec | PENDING |
+| Access Control | Review privileged functions & multisig plan | EngSec | PENDING |
+| Emergency Runbook | Add rollback & partial withdrawal scenarios | Ops | PENDING |
+| Logging | Introduce structured event mapping doc | Eng | PENDING |
+
+Bug Bounty (Preliminary): Draft scope + severity matrix (defer launch until after external audit scheduling).
+
+---
+
+## ⛽ Gas & Performance Benchmarking
+
+Targets:
+
+- Reduce median `rebalance()` gas by ≥10%
+- Verify no regression in `deposit()` or `withdraw()` vs Phase 5.3 baseline
+- Produce `GAS-REPORT.md` (automated snapshot) committed weekly
+
+Actions:
+
+1. Enable Hardhat gas reporter (ensure `GAS_REPORT=true`)
+2. Add benchmark script: run core flows N=5 & average
+3. Document hotspots & candidate optimizations (storage packing, loop bounds, external call batching)
+
+---
+
+## 📚 Documentation & Automation Enhancements
+
+| Component | Enhancement | Tooling |
+|-----------|-------------|---------|
+| Timestamp Refresh | `docs-automation.sh timestamps` in CI | GitHub Actions |
+| Contract Addresses | Auto-regenerate from deployments | `docs-automation.sh addresses` |
+| Link Integrity | Basic markdown scan (extend later) | `link-check` command |
+| Style Enforcement | Add markdown lint job (future) | markdownlint-cli2 |
+| ADR Index | Auto-build ADR list | Simple script (future) |
+
+Add CI workflow `docs.yml` triggering on PR changes touching `/docs/**` or deployments.
+
+---
+
+## 🧪 Analytics & Frontend Hardening
+
+Add test modules:
+
+- Edge APY: zero-liquidity, stale subgraph, negative drift scenario
+- Volatility window boundaries (1 sample / max window)
+- Sharpe ratio divide-by-zero guard
+- Responsive layout snapshot tests (mobile/tablet/desktop)
+- Error boundary recovery for forced network disconnect
+
+Performance Budget:
+
+- Interaction commit <100ms (validate via React Profiler script)
+- Re-render count for main dashboard unchanged (< X per refresh cycle)
+
+---
+
+## 📊 Metrics & Reporting Cadence
+
+| Metric | Source | Frequency | Owner |
+|--------|--------|-----------|-------|
+| Test Pass Rate | CI | Per PR | Eng |
+| Gas Snapshot | Gas reporter | Weekly | Eng |
+| Docs Freshness | Timestamp diff | Weekly | Docs |
+| Invariant Status | Invariant test suite | Weekly | EngSec |
+| Open Security Issues | Issue labels | Weekly | EngSec |
+
+---
+
+## 🗂 Governance & ADR Roadmap
+
+Upcoming ADRs:
+
+1. ADR-0002: Aave Strategy Design
+2. ADR-0003: Invariant Testing Framework & Coverage Policy
+3. ADR-0004: Gas Benchmarking Methodology
+
+Each ADR: context → decision → rationale → measurable success criteria.
+
+---
+
+## 🚀 Launch Readiness Checklist (Phase 6 Exit Criteria)
+
+- [ ] AaveStrategy integrated & stable
+- [ ] All invariants green in CI
+- [ ] Gas benchmarks documented (10%+ optimization opportunities logged)
+- [ ] Security overview updated & reviewed
+- [ ] Emergency scripts & rollback tested
+- [ ] Contract addresses auto-generated & current
+- [ ] Docs CI (timestamps + link-check) passing
+- [ ] ADR-0002/0003 merged
+- [ ] CHANGELOG entries drafted for release tag v6.0.0-pre
+
+---
+
+## 🔄 Post-Launch (Phase 7 Preview)
+
+| Theme | Candidate Items |
+|-------|-----------------|
+| Scaling | Multi-chain deployment, strategy registry factory |
+| Advanced Analytics | Historical aggregation offloaded, machine learning refinement |
+| Governance | Multisig activation, timelock introduction |
+| UX | Notification center, localization, accessibility audit |
+| Security | External audit completion, bounty launch |
+
+---
+
+Focused, measurable steps accelerate audit readiness and de-risk mainnet deployment. This file remains concise; detailed historical plans are archived.
+
+Last updated: 2025-09-01
 
 ## ✅ Phase 5.2 Completed Accomplishments (September 1, 2025)
 

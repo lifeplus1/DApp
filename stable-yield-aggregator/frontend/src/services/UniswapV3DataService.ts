@@ -46,7 +46,7 @@ interface RealYieldMetrics {
 class UniswapV3DataService {
   private static instance: UniswapV3DataService;
   private subgraphUrl = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3';
-  private cache = new Map<string, { data: any; timestamp: number }>();
+  private cache = new Map<string, { data: unknown; timestamp: number }>();
   private cacheTimeout = 30000; // 30 seconds
 
   static getInstance(): UniswapV3DataService {
@@ -62,7 +62,7 @@ class UniswapV3DataService {
     return Date.now() - cached.timestamp < this.cacheTimeout;
   }
 
-  private async query(query: string, variables: any = {}): Promise<any> {
+  private async query(query: string, variables: Record<string, unknown> = {}): Promise<unknown> {
     try {
       const response = await fetch(this.subgraphUrl, {
         method: 'POST',
@@ -82,7 +82,7 @@ class UniswapV3DataService {
       const result = await response.json();
       
       if (result.errors) {
-        throw new Error(`GraphQL errors: ${result.errors.map((e: any) => e.message).join(', ')}`);
+        throw new Error(`GraphQL errors: ${result.errors.map((e: { message: string }) => e.message).join(', ')}`);
       }
 
       return result.data;
@@ -97,7 +97,7 @@ class UniswapV3DataService {
     
     if (this.isCacheValid(cacheKey)) {
       console.log('📦 Using cached pool data for', poolAddress);
-      return this.cache.get(cacheKey)?.data || null;
+      return this.cache.get(cacheKey)?.data as SubgraphPool || null;
     }
 
     const query = `
@@ -139,11 +139,12 @@ class UniswapV3DataService {
     try {
       console.log('🔄 Fetching real pool data for', poolAddress);
       const data = await this.query(query, { poolAddress: poolAddress.toLowerCase() });
+      const typedData = data as { pool?: SubgraphPool };
       
-      if (data.pool) {
-        this.cache.set(cacheKey, { data: data.pool, timestamp: Date.now() });
+      if (typedData.pool) {
+        this.cache.set(cacheKey, { data: typedData.pool, timestamp: Date.now() });
         console.log('✅ Real pool data fetched successfully');
-        return data.pool;
+        return typedData.pool;
       } else {
         console.warn('⚠️ Pool not found:', poolAddress);
         return null;
@@ -240,7 +241,7 @@ class UniswapV3DataService {
     const cacheKey = `top-pools-${limit}`;
     
     if (this.isCacheValid(cacheKey)) {
-      return this.cache.get(cacheKey)?.data || [];
+      return this.cache.get(cacheKey)?.data as SubgraphPool[] || [];
     }
 
     const query = `
@@ -286,8 +287,9 @@ class UniswapV3DataService {
 
     try {
       const data = await this.query(query, { first: limit });
-      this.cache.set(cacheKey, { data: data.pools, timestamp: Date.now() });
-      return data.pools || [];
+      const typedData = data as { pools: SubgraphPool[] };
+      this.cache.set(cacheKey, { data: typedData.pools, timestamp: Date.now() });
+      return typedData.pools || [];
     } catch (error) {
       console.error('❌ Failed to fetch top pools:', error);
       throw error;

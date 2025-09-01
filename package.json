@@ -27,7 +27,10 @@
     "deploy:testnet": "npm run compile && ./dev.sh deploy-sepolia",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "lint:check": "eslint . --max-warnings 0"
+  "lint:check": "eslint . --max-warnings 0",
+  "md:lint": "markdownlint '**/*.md' --ignore node_modules --ignore stable-yield-aggregator/cache",
+  "gas:report": "node stable-yield-aggregator/scripts/gas-report.js"
+  ,"gas:check": "node stable-yield-aggregator/scripts/gas-compare.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
@@ -38,6 +41,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.37.1",
     "eslint-plugin-react-hooks": "^4.6.2",
+  "markdownlint-cli": "^0.39.0",
     "nodemon": "^3.0.1",
     "typescript-eslint": "^8.41.0"
   },

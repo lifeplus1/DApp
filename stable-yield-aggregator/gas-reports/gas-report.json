@@ -1,0 +1,97 @@
+[
+  {
+    "operation": "getAPY (view)",
+    "gas": 32891,
+    "description": "Read-only APY calculation"
+  },
+  {
+    "operation": "totalAssets (view)",
+    "gas": 34512,
+    "description": "Read-only total assets"
+  },
+  {
+    "operation": "getStrategyMetrics (view)",
+    "gas": 39695,
+    "description": "Read-only strategy metrics"
+  },
+  {
+    "operation": "Withdrawal 3",
+    "gas": 86472,
+    "description": "25.0% of shares"
+  },
+  {
+    "operation": "Harvest 2",
+    "gas": 91949,
+    "description": "After 30 days"
+  },
+  {
+    "operation": "Harvest 3",
+    "gas": 91949,
+    "description": "After 90 days"
+  },
+  {
+    "operation": "Withdrawal 1",
+    "gas": 96341,
+    "description": "25.0% of shares"
+  },
+  {
+    "operation": "Withdrawal 2",
+    "gas": 96341,
+    "description": "50.0% of shares"
+  },
+  {
+    "operation": "Deposit 2",
+    "gas": 112980,
+    "description": "$1000.0"
+  },
+  {
+    "operation": "Deposit 3",
+    "gas": 112989,
+    "description": "$10000.0"
+  },
+  {
+    "operation": "Harvest 1",
+    "gas": 160349,
+    "description": "After 7 days"
+  },
+  {
+    "operation": "Harvest Scale Test 1",
+    "gas": 160349,
+    "description": "$1000.0 deposit"
+  },
+  {
+    "operation": "Harvest Scale Test 2",
+    "gas": 160349,
+    "description": "$10000.0 deposit"
+  },
+  {
+    "operation": "Harvest Scale Test 3",
+    "gas": 160349,
+    "description": "$100000.0 deposit"
+  },
+  {
+    "operation": "Deposit 1",
+    "gas": 181380,
+    "description": "$100.0"
+  },
+  {
+    "operation": "Single Large Deposit",
+    "gas": 181389,
+    "description": "$5000.0"
+  },
+  {
+    "operation": "5x Small Deposits (total)",
+    "gas": 578530,
+    "description": "5x $1000.0 vs 1x $5000.0"
+  },
+  {
+    "operation": "Average Monthly Gas",
+    "gas": 730912,
+    "description": "Total gas divided by 6 months"
+  },
+  {
+    "operation": "6-Month Simulation Total",
+    "gas": 4385472,
+    "description": "5 users, monthly deposits, bi-monthly withdrawals, monthly harvests"
+  }
+]

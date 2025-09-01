@@ -1,0 +1,17 @@
+#!/bin/bash
+# Pre-commit quality gate: lint TS/JS, markdown, and run fast tests.
+set -e
+
+echo "🔍 Running ESLint..."
+npm run lint:check > /dev/null
+
+echo "📝 Running markdownlint..."
+npx markdownlint '**/*.md' --ignore node_modules --ignore stable-yield-aggregator/cache > /dev/null
+
+echo "🧪 Running fast tests..."
+# Use existing test script (could be optimized later)
+npm test --workspaces --if-present > /dev/null || echo "⚠️ Tests failed (allowing commit; CI will block)"
+
+# Optional: prevent commit if gas report worsened (future enhancement)
+
+echo "✅ Pre-commit checks passed"

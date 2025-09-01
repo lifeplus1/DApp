@@ -1,44 +1,61 @@
-# 🚀 Phase 4 Multi-Protocol DeFi Portfolio Platform
+# 🚀 Advanced DeFi Yield & Analytics Platform
 
-## Enterprise-Grade DeFi Portfolio Manager with Three-Strategy Diversification
+## Enterprise-Grade Multi-Strategy Portfolio + Live Yield + Advanced Analytics (Phase 5.3 Complete → Phase 6 Readiness)
 
-[![Status](https://img.shields.io/badge/Status-Phase%204.1%20COMPLETE-success)](https://sepolia.etherscan.io/)
-[![Architecture](https://img.shields.io/badge/Phase%204-Three--Strategy%20Portfolio-brightgreen)](PHASE_4_EXPANSION.md)
-[![Portfolio](https://img.shields.io/badge/Portfolio-30%25%20Uni%20%2B%2030%25%20Curve%20%2B%2020%25%20Compound-blue)](PHASE_4_EXPANSION.md)
-[![Deployment](https://img.shields.io/badge/Deployment-Phase%204.1%20Complete-brightgreen)](PHASE_4_EXPANSION.md)
-[![Automation](https://img.shields.io/badge/Workflow-Automated-purple)](#-automation-suite)
+[![Status](https://img.shields.io/badge/Status-Phase%205.3%20Complete%20→%20Phase%206%20Readiness-success)](docs/current/PROJECT-STATUS-CONSOLIDATED.md)
+[![Architecture](https://img.shields.io/badge/Architecture-Multi--Strategy%20+%20Analytics-brightgreen)](docs/current/PLATFORM-OVERVIEW.md)
+[![Portfolio](https://img.shields.io/badge/Strategies-Uniswap%20V3%20%2B%20Curve%20%2B%20Compound%20(Aave%20Prep)-blue)](docs/current/PROJECT-STATUS-CONSOLIDATED.md)
+[![Frontend](https://img.shields.io/badge/Frontend-Optimized%20React%20%2B%20TypeScript-purple)](stable-yield-aggregator/frontend)
+[![Automation](https://img.shields.io/badge/Automation-Full%20Suite-orange)](#-automation-suite)
 
-> **🎯 Advanced DeFi Platform**: Phase 4.1 three-strategy diversified portfolio with automated rebalancing across Uniswap V3 (30%), Curve Finance (30%), and Compound (20%). Professional risk management with 20% optimization buffer and enterprise-grade security on Sepolia testnet.
+> **🎯 Platform Scope (Current)**: Phase 5.3 delivered live Uniswap V3 data integration, performance-optimized React component library,  
+> and advanced analytics (volatility, Sharpe ratio, drawdown, multi-pool comparison) atop the multi-strategy portfolio  
+> (Uniswap / Curve / Compound).  
+> **Phase 6 focuses on Aave integration, audit readiness, gas benchmarking, and automation hardening.**
 
-## 🎯 Project Status: PHASE 4.1 THREE-STRATEGY PORTFOLIO - COMPLETE! ✅
+## 🎯 Current Status: PHASE 5.3 COMPLETE ✅ | Preparing Phase 6 (Production Launch & Aave Finalization)
 
-This repository contains a **Phase 3 enterprise-grade DeFi portfolio manager** featuring:
+This repository now contains a **Phase 5.3 enterprise-grade DeFi yield & analytics platform** featuring:
 
-- 🏗️ **Multi-Strategy Architecture**: PortfolioManager with automated rebalancing
-- � **Protocol Diversification**: 60% Uniswap V3 + 40% Curve Finance integration
-- 🧠 **Intelligent Optimization**: Dynamic allocation based on weighted APY calculations  
+- 🏗️ **Multi-Strategy Architecture**: PortfolioManager with automated rebalancing (Uni / Curve / Compound; Aave staging)
+- 📊 **Advanced Analytics**: Live yield metrics, volatility, Sharpe ratio, drawdown, pool comparison
+- 🧠 **Intelligent Optimization**: Dynamic allocation and performance monitoring
 - 🛡️ **Enterprise Security**: Emergency controls, access management, gas optimization
-- 🎨 **Professional UI**: Advanced React dashboard for portfolio management
-- 🔒 **Production Ready**: Comprehensive testing and real-world deployment validation
+- 🎨 **Optimized React UI**: Performance-tuned component library (memoization, skeleton loading, responsive system)
+- 🔒 **Robust Error Handling**: Production error boundaries & resilient data fetching
+- ⚡ **Live Data Integration**: Real Uniswap V3 subgraph + caching layer
+- 🧪 **Automation & Testing**: Integrated scripts + coverage & analytics reports
 
-## 🚀 Live Platform
+## 🚀 Live Platform (Sepolia)
 
-- **PortfolioManager**: `0x9189d6926e180F77650020f4fF9b4B9efd0a30C9` (Sepolia)
-- **CurveStableStrategy**: `0x8CFD4548e9E7cb38cA714B188215019A63E9B90f` (Sepolia)
-- **LiveUniswapV3Strategy**: Integrated with 60% allocation (Phase 2 contract)
-- **Architecture Status**: Multi-strategy framework operational, pending final integration
-- **Deployment Progress**: 95% complete - one transaction remaining for full activation
+| Component | Status | Notes |
+|-----------|--------|-------|
+| PortfolioManager | ✅ Active | Multi-strategy orchestration |
+| Uniswap V3 Strategy | ✅ Active | Live fee-based yield + analytics |
+| Curve Stable Strategy | ✅ Active | Stable yield diversification |
+| Compound Strategy | ✅ Active | Lending integration |
+| Aave Strategy | 🟡 In Prep | Phase 6 integration & allocation tests |
+| Advanced Analytics Dashboard | ✅ Live | Volatility / Sharpe / Drawdown |
+| Live Yield Dashboard | ✅ Live | Real-time subgraph data (cached) |
+
+> For current contract addresses & metrics see `docs/current/PROJECT-STATUS-CONSOLIDATED.md` (central source of truth, auto-timestamped).
 
 ## 📁 Repository Structure
 
 ```text
-├── stable-yield-aggregator/     # Main DeFi platform
-│   ├── contracts/              # Advanced smart contracts
-│   ├── frontend/               # Enterprise TypeScript React app
-│   ├── typechain-types/        # Generated contract types
-│   └── docs/                   # Comprehensive documentation
-├── NEXT-STEPS.md              # Strategic roadmap
-└── PROJECT-SUMMARY.md         # Complete feature overview
+├── stable-yield-aggregator/     # Core platform (contracts + frontend + internal docs)
+│   ├── contracts/               # Smart contracts & strategies
+│   ├── frontend/                # Optimized React + TypeScript app
+│   ├── docs/                    # Strategy / security / monitoring docs
+│   └── typechain-types/         # Generated contract interfaces
+├── docs/                        # High-level, guides, status, security, ADRs, archives
+│   ├── current/                 # Active status & planning docs
+│   ├── guides/                  # Setup / testing / how-to
+│   └── archive/                 # Historical phase records
+├── DOCUMENTATION-AUDIT-2025-09-01.md  # Documentation audit & recommendations
+├── CONTRIBUTING.md              # Contribution standards & workflow
+├── STYLEGUIDE.md                # (In docs/) Documentation style & formatting rules
+└── .env.example                 # Environment variable reference
 ```
 
 ## ⚡ Quick Start
@@ -107,17 +124,30 @@ This platform includes a comprehensive automation suite for enterprise developme
 
 ### 📖 Quick Access
 
-- **[Complete Documentation](docs/README.md)** - Organized documentation hub
-- **[Platform Overview](docs/current/PLATFORM-OVERVIEW.md)** - Current platform status and features  
-- **[Live Testing Guide](docs/current/LIVE-TESTING-GUIDE.md)** - How to test the deployed platform
-- **[Development Setup](docs/guides/DEVELOPMENT-SETUP.md)** - Complete setup instructions
+- **[Documentation Hub](docs/README.md)** - Central index & navigation
+- **[Platform Overview](docs/current/PLATFORM-OVERVIEW.md)** - Architecture & features  
+- **[Status & Metrics](docs/current/PROJECT-STATUS-CONSOLIDATED.md)** - Live status & KPIs
+- **[Next Steps / Roadmap](docs/current/NEXT-STEPS.md)** - Strategic priorities
+- **[Live Testing Guide](docs/guides/LIVE-TESTING-GUIDE.md)** - Canonical manual validation flows
+- **[Contract Addresses](docs/current/CONTRACT-ADDRESSES.md)** - Canonical registry (auto-updated)
+- **[Security Overview](docs/security/SECURITY-OVERVIEW.md)** - Controls & threat model snapshot
+- **[Style Guide](docs/STYLEGUIDE.md)** - Formatting & governance rules
+- **[Environment Variables](.env.example)** - Required configuration
+- **[Development Setup](docs/guides/DEVELOPMENT-SETUP.md)** - Full environment setup
 
 ### 🛠️ Technical Resources
 
 - **[Testing Guide](docs/guides/TESTING-GUIDE.md)** - Comprehensive testing procedures
 - **[Next Steps](docs/current/NEXT-STEPS.md)** - Strategic roadmap and planned features
+- **[ADR-0001 Analytics Architecture](docs/adr/ADR-0001-analytics-architecture.md)** - Decision log
 - **[Project Status](docs/current/PROJECT-STATUS-CONSOLIDATED.md)** - Live contract addresses and project metrics
 
 ---
 
-**🎉 Enterprise-Grade DeFi Platform - Ready for Market Leadership!**
+> NOTE: Phase 4 & 5 narrative files have been archived under  
+> `docs/archive/phase-4` and `docs/archive/phase-5`.  
+> Future phase logs should be created directly inside a dated subfolder before archival.
+
+### 🎉 Enterprise-Grade DeFi Yield & Analytics Platform - Phase 5.3 Complete | Phase 6 Readiness Underway
+
+Last updated: 2025-09-01

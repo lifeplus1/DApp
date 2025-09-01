@@ -84,7 +84,7 @@ export const useOptimizedUniswapV3 = ({
       console.log('🔄 Phase 5.3: Fetching REAL Uniswap V3 data for', poolAddress);
 
       // Phase 5.3 Day 2: Use real Uniswap V3 subgraph data
-      const realYieldData = await uniswapV3Service.getRealYieldMetrics(poolAddress);
+      const realYieldData: RealYieldMetrics | null = await uniswapV3Service.getRealYieldMetrics(poolAddress);
       const poolInfo = await uniswapV3Service.getPoolData(poolAddress);
 
       if (!realYieldData || !poolInfo) {
