@@ -17,6 +17,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract FeeController is Ownable {
     // ============ Events ============
     event StrategyRegistered(address indexed strategy, bool enabled);
+    event StrategyRemoved(address indexed strategy);
     event PerformanceFeeUpdated(uint256 oldFeeBps, uint256 newFeeBps);
     event FeesAccrued(address indexed strategy, address indexed token, uint256 amount);
     event FeesWithdrawn(address indexed recipient, address indexed token, uint256 amount);
@@ -28,7 +29,8 @@ contract FeeController is Ownable {
     // ============ Storage ============
     mapping(address => bool) public isStrategy;               // authorized fee sources
     mapping(address => mapping(address => uint256)) public accrued; // token => strategy => amount
-    address[] public strategies;                              // registry list (append-only)
+    address[] public strategies;                              // registry list
+    mapping(address => uint256) private strategyIndex;        // 1-based index in strategies array
     uint256 public performanceFeeBps = 1_000; // default 10%
 
     // Destination for withdrawn fees (can be a splitter later)
@@ -51,9 +53,27 @@ contract FeeController is Ownable {
         require(strategy != address(0), "ZERO_ADDR");
         if (enabled && !isStrategy[strategy]) {
             strategies.push(strategy);
+            strategyIndex[strategy] = strategies.length; // 1-based
         }
         isStrategy[strategy] = enabled;
         emit StrategyRegistered(strategy, enabled);
+    }
+
+    function removeStrategy(address strategy) external onlyOwner {
+        require(isStrategy[strategy], "NOT_REGISTERED");
+        isStrategy[strategy] = false;
+        uint256 idx = strategyIndex[strategy];
+        if (idx > 0) {
+            uint256 last = strategies.length;
+            if (idx != last) {
+                address lastStrat = strategies[last - 1];
+                strategies[idx - 1] = lastStrat;
+                strategyIndex[lastStrat] = idx;
+            }
+            strategies.pop();
+            strategyIndex[strategy] = 0;
+        }
+        emit StrategyRemoved(strategy);
     }
 
     function setPerformanceFeeBps(uint256 newFeeBps) external onlyOwner {
@@ -111,7 +131,23 @@ contract FeeController is Ownable {
         }
         IERC20(token).transfer(feeRecipient, total);
         emit FeesWithdrawn(feeRecipient, token, total);
+        // Attempt auto-forward distribution if recipient supports distribute(token)
+        (bool ok, ) = feeRecipient.call(abi.encodeWithSignature("distribute(address)", token));
+        ok; // silence compiler (non-reverting optional hook)
     }
 
     function strategiesCount() external view returns (uint256) { return strategies.length; }
+
+    function getAccrued(address token) external view returns (address[] memory stratList, uint256[] memory amounts) {
+        uint256 length = strategies.length;
+        stratList = new address[](length);
+        amounts = new uint256[](length);
+        for (uint256 i; i < length; ++i) {
+            address s = strategies[i];
+            stratList[i] = s;
+            if (isStrategy[s]) {
+                amounts[i] = accrued[token][s];
+            }
+        }
+    }
 }

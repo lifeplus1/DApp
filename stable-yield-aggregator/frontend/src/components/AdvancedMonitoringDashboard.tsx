@@ -9,6 +9,8 @@ interface SystemMetrics {
   gasEfficiency: number;
   strategiesActive: number;
   alertsCount: number;
+  fees24h: number;
+  feeToYieldRatio: number;
 }
 
 interface StrategyHealth {
@@ -38,7 +40,9 @@ export const AdvancedMonitoringDashboard: React.FC = () => {
     lastRebalance: '2 hours ago',
     gasEfficiency: 87,
     strategiesActive: 4,
-    alertsCount: 0
+    alertsCount: 0,
+    fees24h: 428.73,
+    feeToYieldRatio: 9.8
   });
 
   const [strategiesHealth, setStrategiesHealth] = useState<StrategyHealth[]>([
@@ -96,6 +100,8 @@ export const AdvancedMonitoringDashboard: React.FC = () => {
         healthScore: Math.max(85, Math.min(100, prev.healthScore + (Math.random() - 0.5) * 2)),
         gasEfficiency: Math.max(80, Math.min(95, prev.gasEfficiency + (Math.random() - 0.5) * 3)),
         totalValue: `$${(125847 + Math.random() * 1000 - 500).toFixed(2)}`,
+        fees24h: Math.max(200, Math.min(800, prev.fees24h + (Math.random() - 0.5) * 20)),
+        feeToYieldRatio: Math.max(5, Math.min(15, prev.feeToYieldRatio + (Math.random() - 0.5) * 0.3))
       }));
 
       // Update Aave health factor
@@ -221,13 +227,12 @@ export const AdvancedMonitoringDashboard: React.FC = () => {
                         Health Factor: <span className="font-medium">{strategy.healthFactor.toFixed(2)}x</span>
                       </p>
                       <div className="w-full bg-slate-200 rounded-full h-2 mt-1">
-                        <div 
-                          className={`h-2 rounded-full transition-all duration-500 ${
-                            strategy.healthFactor >= 2.0 ? 'bg-emerald-500' : 
-                            strategy.healthFactor >= 1.5 ? 'bg-yellow-500' : 'bg-red-500'
-                          }`}
-                          style={{ width: `${Math.min(100, (strategy.healthFactor / 2.5) * 100)}%` }}
-                        />
+                        {(() => {
+                          const pct = Math.min(100, (strategy.healthFactor / 2.5) * 100);
+                          const color = strategy.healthFactor >= 2.0 ? 'bg-emerald-500' : strategy.healthFactor >= 1.5 ? 'bg-yellow-500' : 'bg-red-500';
+                          const widthClass = pct > 90 ? 'w-full' : pct > 75 ? 'w-11/12' : pct > 60 ? 'w-3/4' : pct > 45 ? 'w-1/2' : pct > 30 ? 'w-1/3' : 'w-1/4';
+                          return <div className={`h-2 rounded-full transition-all duration-500 ${color} ${widthClass}`} />;
+                        })()}
                       </div>
                     </div>
                   )}
@@ -307,10 +312,11 @@ export const AdvancedMonitoringDashboard: React.FC = () => {
                   <h4 className="font-medium text-slate-700 text-sm">Automation Efficiency</h4>
                   <div className="flex items-center space-x-2">
                     <div className="flex-1 bg-slate-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${automationStatus.automationEfficiency}%` }}
-                      />
+                      {(() => {
+                        const eff = automationStatus.automationEfficiency;
+                        const widthClass = eff > 90 ? 'w-full' : eff > 75 ? 'w-11/12' : eff > 60 ? 'w-3/4' : eff > 45 ? 'w-1/2' : eff > 30 ? 'w-1/3' : 'w-1/4';
+                        return <div className={`bg-blue-500 h-2 rounded-full transition-all duration-500 ${widthClass}`} />;
+                      })()}
                     </div>
                     <span className="text-sm font-medium text-blue-600">
                       {automationStatus.automationEfficiency}%
