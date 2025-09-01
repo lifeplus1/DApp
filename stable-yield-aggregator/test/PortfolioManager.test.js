@@ -8,14 +8,14 @@ describe("PortfolioManager - Phase 3 Multi-Strategy Tests", function () {
     const [owner, user, rebalancer, emergencyOp] = await ethers.getSigners();
 
     // Deploy mock USDC token
-    const MockERC20 = await ethers.getContractFactory("MockERC20");
-    const usdc = await MockERC20.deploy("USD Coin", "USDC", 6);
+    const MockToken = await ethers.getContractFactory("MockToken");
+    const usdc = await MockToken.deploy("USD Coin", "USDC", 6);
 
     // Deploy mock strategies
     const DummyStrategy = await ethers.getContractFactory("DummyStrategy");
-    const strategy1 = await DummyStrategy.deploy(await usdc.getAddress(), owner.address, owner.address);
-    const strategy2 = await DummyStrategy.deploy(await usdc.getAddress(), owner.address, owner.address);
-    const strategy3 = await DummyStrategy.deploy(await usdc.getAddress(), owner.address, owner.address);
+    const strategy1 = await DummyStrategy.deploy(await usdc.getAddress());
+    const strategy2 = await DummyStrategy.deploy(await usdc.getAddress());
+    const strategy3 = await DummyStrategy.deploy(await usdc.getAddress());
 
     // Deploy PortfolioManager
     const PortfolioManager = await ethers.getContractFactory("PortfolioManager");

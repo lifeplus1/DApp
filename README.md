@@ -1,16 +1,16 @@
-# 🚀 Phase 3 Multi-Strategy Portfolio Platform
+# 🚀 Phase 4 Multi-Protocol DeFi Portfolio Platform
 
-## Enterprise-Grade DeFi Portfolio Manager with Multi-Protocol Integration
+## Enterprise-Grade DeFi Portfolio Manager with Three-Strategy Diversification
 
-[![Status](https://img.shields.io/badge/Status-Phase%203%20Live-brightgreen)](https://sepolia.etherscan.io/)
-[![Architecture](https://img.shields.io/badge/Phase%203-Multi--Strategy-success)](docs/current/PLATFORM-OVERVIEW.md)
-[![Portfolio](https://img.shields.io/badge/Portfolio-60%25%20Uniswap%20%2B%2040%25%20Curve-blue)](stable-yield-aggregator/docs/PHASE-3-DEPLOYMENT-STATUS.md)
-[![Deployment](https://img.shields.io/badge/Deployment-95%25%20Complete-orange)](stable-yield-aggregator/docs/PHASE-3-DEPLOYMENT-STATUS.md)
+[![Status](https://img.shields.io/badge/Status-Phase%204.1%20COMPLETE-success)](https://sepolia.etherscan.io/)
+[![Architecture](https://img.shields.io/badge/Phase%204-Three--Strategy%20Portfolio-brightgreen)](PHASE_4_EXPANSION.md)
+[![Portfolio](https://img.shields.io/badge/Portfolio-30%25%20Uni%20%2B%2030%25%20Curve%20%2B%2020%25%20Compound-blue)](PHASE_4_EXPANSION.md)
+[![Deployment](https://img.shields.io/badge/Deployment-Phase%204.1%20Complete-brightgreen)](PHASE_4_EXPANSION.md)
 [![Automation](https://img.shields.io/badge/Workflow-Automated-purple)](#-automation-suite)
 
-> **🎯 Advanced DeFi Platform**: Phase 3 multi-strategy portfolio manager with automated rebalancing, 60% Uniswap V3 + 40% Curve allocation, enterprise-grade security, and comprehensive analytics. Ready for multi-protocol yield optimization on Sepolia testnet.
+> **🎯 Advanced DeFi Platform**: Phase 4.1 three-strategy diversified portfolio with automated rebalancing across Uniswap V3 (30%), Curve Finance (30%), and Compound (20%). Professional risk management with 20% optimization buffer and enterprise-grade security on Sepolia testnet.
 
-## 🎯 Project Status: PHASE 3 MULTI-STRATEGY PORTFOLIO - 95% COMPLETE ✅
+## 🎯 Project Status: PHASE 4.1 THREE-STRATEGY PORTFOLIO - COMPLETE! ✅
 
 This repository contains a **Phase 3 enterprise-grade DeFi portfolio manager** featuring:
 
@@ -24,10 +24,12 @@ This repository contains a **Phase 3 enterprise-grade DeFi portfolio manager** f
 ## 🚀 Live Platform
 
 - **PortfolioManager**: `0x9189d6926e180F77650020f4fF9b4B9efd0a30C9` (Sepolia)
-- **CurveStableStrategy**: `0x8CFD4548e9E7cb38cA714B188215019A63E9B90f` (Sepolia)
-- **LiveUniswapV3Strategy**: Integrated with 60% allocation (Phase 2 contract)
-- **Architecture Status**: Multi-strategy framework operational, pending final integration
-- **Deployment Progress**: 95% complete - one transaction remaining for full activation
+- **UniswapV3Strategy**: `0x46375e552F269a90F42CE4746D23FA9d347142CB` (30% allocation)
+- **CurveStableStrategy**: `0x8CFD4548e9E7cb38cA714B188215019A63E9B90f` (30% allocation)
+- **CompoundStrategy**: `0xE1638A4DfB877343D0Bf1CA5899BbEa66440279a` (20% allocation)  
+- **AaveStrategy**: `0xdb240a99aacaDeFFB9e85e700cE6F0e489F8d8e6` (15% allocation)
+- **Architecture Status**: Four-strategy portfolio fully operational
+- **Capital Deployment**: 95% deployed across 4 DeFi protocols
 
 ## 📁 Repository Structure
 
@@ -116,7 +118,7 @@ This platform includes a comprehensive automation suite for enterprise developme
 
 - **[Testing Guide](docs/guides/TESTING-GUIDE.md)** - Comprehensive testing procedures
 - **[Next Steps](docs/current/NEXT-STEPS.md)** - Strategic roadmap and planned features
-- **[Deployment Status](docs/current/DEPLOYMENT-STATUS.md)** - Live contract addresses and metrics
+- **[Project Status](docs/current/PROJECT-STATUS-CONSOLIDATED.md)** - Live contract addresses and project metrics
 
 ---
 
