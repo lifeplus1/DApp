@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "../interfaces/IStrategyV2.sol";
+import "../../interfaces/IStrategyV2.sol";
 
 // Aave V3 Interfaces
 interface IPool {
@@ -105,6 +105,7 @@ contract AaveV3Strategy is IStrategyV2, AccessControl, ReentrancyGuard, Pausable
     // Emergency state
     bool public emergencyMode;
     uint256 public emergencyExitTimestamp;
+    address private adminAddress; // cache admin for emergency withdrawals
 
     // Events
     event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
@@ -151,9 +152,10 @@ contract AaveV3Strategy is IStrategyV2, AccessControl, ReentrancyGuard, Pausable
         priceOracle = IPriceOracle(_priceOracle);
 
         // Setup roles
-        _grantRole(DEFAULT_ADMIN_ROLE, _admin);
+    _grantRole(DEFAULT_ADMIN_ROLE, _admin);
         _grantRole(MANAGER_ROLE, _admin);
         _grantRole(EMERGENCY_ROLE, _admin);
+    adminAddress = _admin;
 
         // Initialize configuration with conservative defaults
         config = AaveConfig({
@@ -278,24 +280,19 @@ contract AaveV3Strategy is IStrategyV2, AccessControl, ReentrancyGuard, Pausable
      * @param assets Amount to deposit
      * @return shares Amount of shares that would be minted
      */
-    function previewDeposit(uint256 assets) external pure override returns (uint256 shares) {
-        return assets; // 1:1 ratio for Phase 6
+    // Preview helpers (not part of interface)
+    function previewDeposit(uint256 assets) external pure returns (uint256 shares) {
+        return assets;
     }
-
-    /**
-     * @notice Preview withdraw calculation  
-     * @param assets Amount to withdraw
-     * @return shares Amount of shares that would be burned
-     */
-    function previewWithdraw(uint256 assets) external pure override returns (uint256 shares) {
-        return assets; // 1:1 ratio for Phase 6
+    function previewWithdraw(uint256 assets) external pure returns (uint256 shares) {
+        return assets;
     }
 
     /**
      * @notice Get current APY from Aave lending
      * @return APY in basis points
      */
-    function getAPY() external view returns (uint256) {
+    function getAPY() external view override returns (uint256) {
         (, uint128 liquidityRate, , , , , , , , , , , , , ) = aavePool.getReserveData(address(asset));
         
         // Convert ray (27 decimals) to BPS
@@ -314,9 +311,9 @@ contract AaveV3Strategy is IStrategyV2, AccessControl, ReentrancyGuard, Pausable
     /**
      * @notice Harvest yield and compound
      */
-    function harvest() external onlyManager nonReentrant {
+    function harvest() external override onlyManager nonReentrant returns (uint256 yield) {
         uint256 currentBalance = aToken.balanceOf(address(this));
-        uint256 yield = currentBalance > totalDeposits ? currentBalance - totalDeposits : 0;
+        yield = currentBalance > totalDeposits ? currentBalance - totalDeposits : 0;
 
         if (yield > 0) {
             // Calculate performance fee
@@ -338,6 +335,7 @@ contract AaveV3Strategy is IStrategyV2, AccessControl, ReentrancyGuard, Pausable
             lastHarvest = block.timestamp;
             emit PerformanceFeeCollected(feeAmount, block.timestamp);
         }
+        return yield;
     }
 
     /**
@@ -413,8 +411,7 @@ contract AaveV3Strategy is IStrategyV2, AccessControl, ReentrancyGuard, Pausable
         // Transfer all USDC to admin
         uint256 balance = asset.balanceOf(address(this));
         if (balance > 0) {
-            address admin = getRoleMember(DEFAULT_ADMIN_ROLE, 0);
-            asset.safeTransfer(admin, balance);
+            asset.safeTransfer(adminAddress, balance);
         }
     }
 
@@ -538,5 +535,8 @@ contract AaveV3Strategy is IStrategyV2, AccessControl, ReentrancyGuard, Pausable
         healthFactorCurrent = getHealthFactor();
         leverageRatio = totalDeposits > 0 ? (totalBorrows * MAX_BPS) / totalDeposits : 0;
         yieldGenerated = totalYieldGenerated;
+    }
+    function getStrategyInfo() external view override returns (string memory strategyName, string memory version, string memory description) {
+        return ("AaveV3 Strategy", "1.0.0", "Aave V3 lending with optional leverage and risk management");
     }
 }

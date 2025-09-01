@@ -79,10 +79,10 @@
 ### Yield Source Diversification
 
 1. **Trading Fees**: Uniswap V3 LP fees
-2. **Pool Rewards**: Curve CRV token rewards
-3. **Lending Interest**: Compound cUSDC interest + COMP rewards
-4. **Lending Interest**: Aave aUSDC interest + AAVE rewards
-5. **Optimization**: Dynamic rebalancing opportunities
+1. **Pool Rewards**: Curve CRV token rewards
+1. **Lending Interest**: Compound cUSDC interest + COMP rewards
+1. **Lending Interest**: Aave aUSDC interest + AAVE rewards
+1. **Optimization**: Dynamic rebalancing opportunities
 
 ### Security Architecture
 
@@ -150,8 +150,8 @@ PortfolioManager (Hub)
 ### Phase 3 → Phase 4.1 → Phase 4.2
 
 1. **Phase 3**: Two-strategy foundation (UniswapV3 + Curve)
-2. **Phase 4.1**: Three-strategy expansion (+ CompoundStrategy)
-3. **Phase 4.2**: Four-strategy diversification (+ AaveStrategy)
+1. **Phase 4.1**: Three-strategy expansion (+ CompoundStrategy)
+1. **Phase 4.2**: Four-strategy diversification (+ AaveStrategy)
 
 ### Capital Deployment Evolution
 
@@ -179,9 +179,9 @@ PortfolioManager (Hub)
 ### Potential Expansion Areas
 
 1. **Yield Farming**: Additional reward token strategies
-2. **Synthetic Assets**: Synthetix or similar protocols
-3. **Cross-Chain**: Bridge strategies to other networks
-4. **Advanced DeFi**: Options, perpetuals, or structured products
+1. **Synthetic Assets**: Synthetix or similar protocols
+1. **Cross-Chain**: Bridge strategies to other networks
+1. **Advanced DeFi**: Options, perpetuals, or structured products
 
 ### Platform Maturity
 

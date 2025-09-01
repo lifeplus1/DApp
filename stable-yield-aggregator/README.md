@@ -189,9 +189,9 @@ npx hardhat run scripts/deploy-advanced.js --network sepolia
 This is an enterprise-grade DeFi project with professional development standards:
 
 1. **TypeScript Required**: All code must pass strict type checking
-2. **Test Coverage**: Maintain 100% test coverage
-3. **Documentation**: Update docs for all new features
-4. **Security**: Follow OpenZeppelin best practices
+1. **Test Coverage**: Maintain 100% test coverage
+1. **Documentation**: Update docs for all new features
+1. **Security**: Follow OpenZeppelin best practices
 
 ## 📄 License
 
