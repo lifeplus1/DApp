@@ -1,1 +1,5 @@
 node_modules
+
+# Prevent duplicate/conflicting React App files
+**/App.jsx
+App.jsx
