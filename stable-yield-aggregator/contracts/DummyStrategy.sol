@@ -2,31 +2,20 @@
 pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IStrategyV2.sol";
-
-interface IFeeController {
-    function notifyFee(address token, uint256 amount) external;
-    function performanceFeeBps() external view returns (uint256);
-}
 
 /**
  * @title DummyStrategy
  * @dev Mock strategy for stablecoin LP. In real, integrate with DEX router to add/remove liquidity in USDC/USDT pool.
  * Best practices: View functions for transparency, no state bloat.
  */
-contract DummyStrategy is IStrategyV2, Ownable {
+contract DummyStrategy is IStrategyV2 {
     IERC20 public asset;
     uint256 public deposited;
     uint256 public yieldAccumulated; // Track accumulated yield
-    IFeeController public feeController; // optional fee controller
 
-    constructor(IERC20 _asset) Ownable(msg.sender) {
+    constructor(IERC20 _asset) {
         asset = _asset;
-    }
-
-    function setFeeController(IFeeController _fc) external onlyOwner {
-        feeController = _fc;
     }
 
     function deposit(uint256 amount, address user) external override returns (uint256 shares) {
@@ -72,17 +61,12 @@ contract DummyStrategy is IStrategyV2, Ownable {
             }
         }
         
-        // Fee handling
-    if (newYield > 0 && address(feeController) != address(0)) {
-            uint256 bps = feeController.performanceFeeBps();
-            if (bps > 0) {
-                uint256 fee = (newYield * bps) / 10_000;
-                if (fee > 0 && asset.balanceOf(address(this)) >= fee) {
-                    asset.transfer(address(feeController), fee);
-                    yieldAccumulated -= fee;
-                    // notify
-                    feeController.notifyFee(address(asset), fee);
-                }
+        // Transfer fee to the vault (caller)
+        if (newYield > 0) {
+            uint256 fee = (newYield * 100) / 10000; // 1% fee
+            if (fee > 0 && asset.balanceOf(address(this)) >= fee) {
+                asset.transfer(msg.sender, fee);
+                yieldAccumulated -= fee; // Reduce accumulated yield by fee
             }
         }
         

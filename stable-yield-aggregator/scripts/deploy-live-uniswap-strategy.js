@@ -158,7 +158,7 @@ async function main() {
 // Execute deployment
 if (require.main === module) {
   main()
-    .then((_result) => {
+    .then((result) => {
       console.log("\n✅ Deployment completed successfully!");
       process.exit(0);
     })

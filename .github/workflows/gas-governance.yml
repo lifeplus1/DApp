@@ -38,10 +38,10 @@ jobs:
       - name: Compare with baseline
         run: |
           cd stable-yield-aggregator
-          if [ -f benchmark-baseline.json ] && [ -f benchmark-current.json ]; then
-            node scripts/fees-benchmark-compare.js --baseline benchmark-baseline.json --current benchmark-current.json --threshold 5;
+          if [ -f benchmark-current.json ] && [ -f benchmark-baseline.json ]; then
+            node scripts/fees-benchmark-compare.js --baseline benchmark-baseline.json --current benchmark-current.json --threshold 5
           else
-            echo "Baseline or current benchmark missing; skipping comparison";
+            echo "Baseline or current benchmark file not found, skipping comparison"
           fi
       - name: Upload current benchmark as artifact
         uses: actions/upload-artifact@v4

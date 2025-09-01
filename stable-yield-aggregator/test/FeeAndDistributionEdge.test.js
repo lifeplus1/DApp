@@ -4,11 +4,11 @@ const { ethers } = require("hardhat");
 /** Edge cases for FeeController & DistributionSplitter */
 
 describe("FeeController + DistributionSplitter Edge Cases", function () {
-  let owner, stratA, stratB, recipient1, recipient2, recipient3;
+  let owner, stratA, stratB, recipient1, recipient2, _recipient3;
   let token, feeController, splitter;
 
   beforeEach(async () => {
-    [owner, stratA, stratB, recipient1, recipient2, recipient3] = await ethers.getSigners();
+    [owner, stratA, stratB, recipient1, recipient2, _recipient3] = await ethers.getSigners();
 
     const ERC20Mock = await ethers.getContractFactory("ERC20Mock");
     token = await ERC20Mock.deploy("MockUSD", "mUSD");

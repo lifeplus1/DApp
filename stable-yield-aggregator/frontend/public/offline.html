@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Offline - Enterprise DeFi Platform</title>
+  <!-- Viewport; interactive-widget improves mobile keyboard push -->
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="description" content="Enterprise DeFi Platform - Offline Mode"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <!-- Basic security hardening (aligned with service worker scope) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; upgrade-insecure-requests"/>
+
+  <!-- PWA / Icons -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
+
+  <!-- External stylesheet (non‑critical); inline fallback below -->
+  <link rel="stylesheet" href="/offline.css" integrity rel="preload" as="style" onload="this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/offline.css"></noscript>
+
+  <!-- Critical minimal inline styles to avoid FOUSC when offline.css not cached -->
+  <style>
+    :root { --bg:#f1f5f9; --bg-alt:#ffffff; --text:#0f172a; --muted:#475569; --accent:#2563eb; --border:#e2e8f0; --warn:#f59e0b; --badge:#334155; }
+    @media (prefers-color-scheme:dark){ :root { --bg:#0f172a; --bg-alt:#1e293b; --text:#f1f5f9; --muted:#94a3b8; --accent:#3b82f6; --border:#334155; --warn:#fbbf24; --badge:#1e293b; } }
+    *,*::before,*::after{box-sizing:border-box;} html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif;background:var(--bg);color:var(--text);} body{display:flex;align-items:center;justify-content:center;padding:2rem;} .offline-container{max-width:640px;width:100%;background:var(--bg-alt);padding:2.25rem 2rem;border:1px solid var(--border);border-radius:1.25rem;box-shadow:0 4px 24px -2px rgba(0,0,0,.06);} h1{margin:0 0 1rem;font-size:clamp(1.75rem,4vw,2.5rem);line-height:1.1;} p{line-height:1.5;margin:.75rem 0;font-size:0.95rem;} a{color:var(--accent);text-decoration:none;} a:hover{text-decoration:underline;} .badge{display:inline-flex;align-items:center;gap:.4rem;font-size:.75rem;letter-spacing:.05em;text-transform:uppercase;font-weight:600;padding:.4rem .75rem;border-radius:2rem;background:linear-gradient(135deg,var(--accent),#6366f1);color:#fff;box-shadow:0 2px 4px rgba(0,0,0,.15);} .actions{margin-top:1.25rem;display:flex;flex-wrap:wrap;gap:.75rem;} button.retry{background:var(--accent);color:#fff;border:0;padding:.7rem 1.1rem;font-weight:600;border-radius:.75rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.15);} button.retry:disabled{opacity:.5;cursor:not-allowed;} .hint{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:1.25rem;} .build-info{margin-top:1.25rem;font-size:.75rem;color:var(--muted);} [role=status]{margin-top:1rem;font-size:.8rem;} .reconnect{display:none;margin-top:1rem;padding:.6rem .85rem;background:var(--accent);color:#fff;font-size:.8rem;border-radius:.6rem;font-weight:600;} .last-sync{font-size:.75rem;margin-top:.5rem;color:var(--muted);} @media (prefers-reduced-motion:no-preference){ .fade-in{animation:fade .5s ease-in both;} @keyframes fade{from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:translateY(0);} }}
+  </style>
+</head>
+<body>
+  <main class="offline-container fade-in" role="main" aria-labelledby="offline-title">
+    <div class="badge" aria-hidden="true">Offline Mode</div>
+    <h1 id="offline-title">You're Offline</h1>
+    <p>Your network connection appears to be unavailable. Cached portfolio data (if previously loaded) may remain visible in limited areas.</p>
+    <p>The application will automatically attempt to resync balances, prices, and analytics once connectivity returns.</p>
+    <p>If this persists, verify your internet connection or try reloading the page.</p>
+    <p><a href="/" rel="noopener" id="home-link">Return Home</a></p>
+    <div class="actions">
+      <button class="retry" id="retry-btn" type="button" aria-label="Retry loading application">Retry Now</button>
+      <button class="retry" id="force-online-check" type="button" aria-label="Check connectivity">Check Connection</button>
+    </div>
+    <p class="hint">Application Offline Fallback</p>
+    <p class="build-info">Build: <span id="build-meta" aria-live="polite" role="status">loading…</span></p>
+    <p class="last-sync" id="last-sync" hidden></p>
+    <div id="reconnect-banner" class="reconnect" role="status" aria-live="assertive">Connection restored. Resuming…</div>
+    <noscript><p style="color:#dc2626;font-weight:600">JavaScript disabled: realtime portfolio sync unavailable.</p></noscript>
+    <script>
+      (function(){
+        document.documentElement.classList.remove('no-js');
+        const buildEl = document.getElementById('build-meta');
+        const lastSyncEl = document.getElementById('last-sync');
+        const reconnectEl = document.getElementById('reconnect-banner');
+        const RETRY_INTERVAL = 15000; // 15s passive retry
+        const BUILD_META_URL = '/build-meta.json?v=' + Date.now();
+
+        function setBuild(text){ if(buildEl) buildEl.textContent = text; }
+        function safeLS(fn){ try { return fn(); } catch { return undefined; } }
+
+        // Last successful sync timestamp display
+        const lastSync = safeLS(()=>localStorage.getItem('lastSync'));
+        if(lastSync){ lastSyncEl.hidden = false; lastSyncEl.textContent = 'Last Sync: ' + new Date(lastSync).toLocaleString(); }
+
+        fetch(BUILD_META_URL, { cache:'no-store' })
+          .then(r => r.ok ? r.json():Promise.reject())
+          .then(m => {
+            setBuild((m.version||'?') + ' @ ' + (m.buildDate||''));
+            safeLS(()=>localStorage.setItem('lastSync', new Date().toISOString()));
+          })
+          .catch(()=> setBuild('offline build'));
+
+        // Retry & connectivity logic
+        function attemptOnlineRedirect(){
+          if(navigator.onLine){
+            reconnectEl.style.display='block';
+            setTimeout(()=>{ window.location.replace('/'); }, 1200);
+          }
+        }
+
+        window.addEventListener('online', attemptOnlineRedirect);
+        document.getElementById('retry-btn').addEventListener('click', attemptOnlineRedirect);
+        document.getElementById('force-online-check').addEventListener('click', () => {
+          // Lightweight HEAD ping (same origin)
+          fetch('/', { method:'HEAD', cache:'no-store' }).then(()=>attemptOnlineRedirect());
+        });
+
+        // Passive periodic attempts (in case online event missed)
+        setInterval(attemptOnlineRedirect, RETRY_INTERVAL);
+      })();
+    </script>
+  </main>
+</body>
+</html>

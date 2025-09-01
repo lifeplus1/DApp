@@ -73,7 +73,7 @@ describe("AaveStrategy", function () {
 
     describe("Deployment", function () {
         it("Should deploy with correct initial values", async function () {
-            const { aaveStrategy, mockUSDC, mockAUSDC, mockAavePool, mockAaveRewards, owner: _owner, portfolioManager: _portfolioManager } = 
+            const { aaveStrategy, mockUSDC, mockAUSDC, mockAavePool, mockAaveRewards, owner, portfolioManager } = 
                 await loadFixture(deployAaveStrategyFixture);
 
             expect(await aaveStrategy.asset()).to.equal(await mockUSDC.getAddress());
@@ -114,7 +114,7 @@ describe("AaveStrategy", function () {
 
     describe("Deposits", function () {
         it("Should allow portfolio manager to deposit", async function () {
-            const { aaveStrategy, mockUSDC, portfolioManager, user1, initialBalance: _initialBalance } = 
+            const { aaveStrategy, mockUSDC, portfolioManager, user1, initialBalance } = 
                 await loadFixture(deployAaveStrategyFixture);
 
             const depositAmount = ethers.parseUnits("100", 6); // 100 USDC
@@ -278,7 +278,7 @@ describe("AaveStrategy", function () {
 
     describe("Harvest", function () {
         it("Should harvest AAVE rewards", async function () {
-            const { aaveStrategy, mockAaveRewards, portfolioManager, user1: _user1 } = 
+            const { aaveStrategy, mockAaveRewards, portfolioManager, user1 } = 
                 await loadFixture(deployAaveStrategyFixture);
 
             // Set up rewards
@@ -354,7 +354,7 @@ describe("AaveStrategy", function () {
         });
 
         it("Should allow emergency withdrawal in emergency mode", async function () {
-            const { aaveStrategy, mockUSDC, portfolioManager, user1, owner, initialBalance: _initialBalance } = 
+            const { aaveStrategy, mockUSDC, portfolioManager, user1, owner, initialBalance } = 
                 await loadFixture(deployAaveStrategyFixture);
 
             const depositAmount = ethers.parseUnits("100", 6);

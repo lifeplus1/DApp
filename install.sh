@@ -95,12 +95,6 @@ install_platform() {
     
     # Make scripts executable
     chmod +x *.sh
-    # Configure git hooks
-    if [ -d ".githooks" ]; then
-        git config core.hooksPath .githooks || true
-        chmod +x .githooks/* || true
-        print_success "Git hooks configured"
-    fi
     
     # Run setup
     print_info "Setting up dependencies..."

@@ -6,11 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "../../interfaces/IStrategyV2.sol";
 
-interface IFeeControllerV2Curve {
-    function performanceFeeBps() external view returns (uint256);
-    function notifyFee(address token, uint256 amount) external;
-}
-
 // Curve Finance Interface
 interface ICurvePool {
     function add_liquidity(uint256[3] calldata amounts, uint256 min_mint_amount) external returns (uint256);
@@ -60,9 +55,8 @@ contract CurveStableStrategy is IStrategyV2, Ownable, ReentrancyGuard {
     
     // Configuration
     uint256 public constant USDC_INDEX = 1;    // USDC index in 3Pool
-    uint256 public performanceFee = 1000;      // 10% performance fee (basis points) (fallback if no controller)
+    uint256 public performanceFee = 1000;      // 10% performance fee (basis points)
     uint256 public slippageTolerance = 100;    // 1% slippage tolerance
-    IFeeControllerV2Curve public feeController; // optional external controller
     
     // Events
     event Deposit(uint256 amount, uint256 lpTokens, address user);
@@ -180,17 +174,6 @@ contract CurveStableStrategy is IStrategyV2, Ownable, ReentrancyGuard {
         uint256 crvBalance = crvToken.balanceOf(address(this));
         
         if (crvBalance > 0) {
-            uint256 feeBps = performanceFee;
-            if (address(feeController) != address(0)) {
-                feeBps = feeController.performanceFeeBps();
-            }
-            uint256 feeAmount = (crvBalance * feeBps) / 10_000;
-            if (feeAmount > 0 && address(feeController) != address(0)) {
-                // Transfer fee to controller & notify (fee paid in CRV)
-                crvToken.transfer(address(feeController), feeAmount);
-                feeController.notifyFee(address(crvToken), feeAmount);
-                crvBalance -= feeAmount;
-            }
             // For this implementation, we'll track CRV rewards
             // In production, you would swap CRV for USDC through a DEX
             totalCRVEarned += crvBalance;
@@ -206,10 +189,6 @@ contract CurveStableStrategy is IStrategyV2, Ownable, ReentrancyGuard {
         }
         
         return yield;
-    }
-
-    function setFeeController(address _fc) external onlyOwner {
-        feeController = IFeeControllerV2Curve(_fc);
     }
     
     /**

@@ -26,8 +26,8 @@ export const switchToSepolia = async (ethereum: EthereumProvider): Promise<void>
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: SEPOLIA_NETWORK.chainId }],
     });
-  } catch (switchError: unknown) {
-    if (switchError && typeof switchError === 'object' && 'code' in switchError && (switchError as { code: number }).code === 4902) {
+  } catch (switchError: any) {
+    if (switchError.code === 4902) {
       await ethereum.request({
         method: 'wallet_addEthereumChain',
         params: [{

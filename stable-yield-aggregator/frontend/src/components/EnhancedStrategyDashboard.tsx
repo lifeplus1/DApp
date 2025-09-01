@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ethers } from 'ethers';
 import { 
   ArrowTrendingUpIcon, 
   CurrencyDollarIcon, 
@@ -14,8 +13,8 @@ import useEnhancedStrategy from '../hooks/useEnhancedStrategy';
 interface EnhancedStrategyDashboardProps {
   strategyAddress: string;
   vaultAddress: string;
-  provider?: ethers.Provider;
-  signer?: ethers.Signer;
+  provider?: any;
+  signer?: any;
   className?: string;
 }
 
@@ -35,8 +34,8 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
   const { metrics, userBalance, loading, error, actions } = useEnhancedStrategy({
     strategyAddress,
     vaultAddress,
-    ...(provider && { provider }),
-    ...(signer && { signer })
+    provider,
+    signer
   });
 
   const handleDeposit = async () => {

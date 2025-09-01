@@ -52,9 +52,8 @@ const EnhancedYieldApp: React.FC = () => {
             params: [{ chainId: `0x${parseInt(deployments.network.chainId).toString(16)}` }],
           });
           await checkNetwork(newProvider);
-        } catch (switchError: unknown) {
-          const error = switchError as { code?: number };
-          if (error.code === 4902) {
+        } catch (switchError: any) {
+          if (switchError.code === 4902) {
             // Network not added to wallet, add it
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
@@ -81,10 +80,9 @@ const EnhancedYieldApp: React.FC = () => {
       setSigner(newSigner);
       setAccount(address);
 
-    } catch (error: unknown) {
-      const err = error as Error;
+    } catch (error: any) {
       console.error('Error connecting wallet:', error);
-      alert('Failed to connect wallet: ' + (err.message || 'Unknown error'));
+      alert('Failed to connect wallet: ' + error.message);
     } finally {
       setIsConnecting(false);
     }
@@ -100,14 +98,13 @@ const EnhancedYieldApp: React.FC = () => {
 
   // Initialize provider on load
   useEffect(() => {
-    if (window.ethereum && (window.ethereum as { selectedAddress?: string }).selectedAddress) {
+    if (window.ethereum && (window.ethereum as any).selectedAddress) {
       connectWallet();
     }
 
     // Listen for account changes
     if (window.ethereum) {
-      window.ethereum.on('accountsChanged', (...args: unknown[]) => {
-        const accounts = args[0] as string[];
+      window.ethereum.on('accountsChanged', (accounts: string[]) => {
         if (accounts.length === 0) {
           disconnectWallet();
         } else {
@@ -322,8 +319,8 @@ const EnhancedYieldApp: React.FC = () => {
           <EnhancedStrategyDashboard
             strategyAddress={deployments.contracts.enhancedStrategy}
             vaultAddress={deployments.contracts.stableVault}
-            {...(provider && { provider })}
-            {...(networkSupported && signer && { signer })}
+            provider={provider}
+            signer={networkSupported ? signer : null}
           />
         </div>
 

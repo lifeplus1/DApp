@@ -5,6 +5,7 @@ export interface HealthFactorSample {
   timestamp: number;
   healthFactor: number; // normalized (e.g., 1.00 = 1x)
   status?: 'healthy' | 'warning' | 'critical';
+  latencyMs?: number | undefined; // time since previous sample
 }
 
 const UI_DATA_PROVIDER_ABI = [
@@ -24,6 +25,7 @@ export class HealthFactorService {
   private warnThreshold: number;
   private criticalThreshold: number;
   private lastStatus?: 'healthy' | 'warning' | 'critical';
+  private lastTimestamp?: number;
   private statusListeners: Array<(s: HealthFactorSample) => void> = [];
 
   constructor(provider: ethers.Provider, userAddress: string, pollingMs: number = 30000, options?: {
@@ -80,7 +82,9 @@ export class HealthFactorService {
           hf = base + variance;
         }
         const status = this.classify(hf);
-        const sample: HealthFactorSample = { timestamp: Date.now(), healthFactor: Number(hf.toFixed(3)), status };
+  const now = Date.now();
+  const sample: HealthFactorSample = { timestamp: now, healthFactor: Number(hf.toFixed(3)), status, latencyMs: this.lastTimestamp ? now - this.lastTimestamp : undefined };
+  this.lastTimestamp = now;
         this.buffer.push(sample);
         if (this.buffer.length > this.maxSamples) this.buffer.shift();
         this.listeners.forEach(l => l(sample));

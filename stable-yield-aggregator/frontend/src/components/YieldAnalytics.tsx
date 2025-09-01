@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserProvider } from 'ethers';
 import { CONTRACTS, YIELD_OPTIMIZER_ABI, ENHANCED_STRATEGY_ABI } from '../constants/contracts';
 
 interface StrategyMetrics {
@@ -12,7 +11,7 @@ interface StrategyMetrics {
 }
 
 interface YieldAnalyticsProps {
-  web3Provider?: BrowserProvider;
+  web3Provider?: any;
 }
 
 export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) => {
@@ -26,7 +25,7 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
     setLoading(true);
     try {
       const { ethers } = await import('ethers');
-      const signer = await web3Provider.getSigner();
+      const signer = web3Provider.getSigner();
       
       // Connect to YieldOptimizer
       const yieldOptimizer = new ethers.Contract(

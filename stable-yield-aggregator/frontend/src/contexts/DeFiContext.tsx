@@ -11,7 +11,7 @@ interface DeFiState {
   isConnecting: boolean;
   
   // Contract state
-  contracts: Record<string, ethers.Contract> | null;
+  contracts: any;
   balances: {
     usdc: bigint;
     vault: bigint;
@@ -236,9 +236,8 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: '0xaa36a7' }],
           });
-        } catch (switchError: unknown) {
-          const error = switchError as { code?: number };
-          if (error.code === 4902) {
+        } catch (switchError: any) {
+          if (switchError.code === 4902) {
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [{
@@ -269,11 +268,10 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
 
-    } catch (error: unknown) {
-      const err = error as Error;
+    } catch (error: any) {
       dispatch({
         type: 'CONNECT_ERROR',
-        payload: err.message || 'Failed to connect wallet'
+        payload: error.message || 'Failed to connect wallet'
       });
     }
   };
@@ -377,13 +375,12 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       await refreshBalances();
 
-    } catch (error: unknown) {
-      const err = error as Error;
+    } catch (error: any) {
       dispatch({
         type: 'ADD_NOTIFICATION',
         payload: {
           type: 'error',
-          message: `Deposit failed: ${err.message || 'Unknown error'}`
+          message: `Deposit failed: ${error.message || 'Unknown error'}`
         }
       });
     } finally {
@@ -415,13 +412,12 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       await refreshBalances();
 
-    } catch (error: unknown) {
-      const err = error as Error;
+    } catch (error: any) {
       dispatch({
         type: 'ADD_NOTIFICATION',
         payload: {
           type: 'error',
-          message: `Withdrawal failed: ${err.message || 'Unknown error'}`
+          message: `Withdrawal failed: ${error.message || 'Unknown error'}`
         }
       });
     } finally {
@@ -452,13 +448,12 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await refreshBalances();
       await refreshStrategies();
 
-    } catch (error: unknown) {
-      const err = error as Error;
+    } catch (error: any) {
       dispatch({
         type: 'ADD_NOTIFICATION',
         payload: {
           type: 'error',
-          message: `Harvest failed: ${err.message || 'Unknown error'}`
+          message: `Harvest failed: ${error.message || 'Unknown error'}`
         }
       });
     } finally {

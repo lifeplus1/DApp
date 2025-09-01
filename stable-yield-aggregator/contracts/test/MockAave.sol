@@ -12,7 +12,6 @@ contract MockAToken is ERC20, Ownable {
     IERC20 public immutable underlyingAsset;
     uint128 public liquidityIndex = 1e27; // Starting at 1 RAY
     uint256 public lastUpdateTimestamp;
-    address public pool; // authorized pool for mint/burn
     
     // Simulate 5% APY growth in liquidity index
     uint256 private constant GROWTH_RATE = 158548959919; // Per second growth rate for ~5% APY
@@ -29,14 +28,7 @@ contract MockAToken is ERC20, Ownable {
     /**
      * @dev Mint aTokens when underlying is deposited
      */
-    function setPool(address _pool) external onlyOwner { pool = _pool; }
-
-    modifier onlyOwnerOrPool() {
-        require(msg.sender == owner() || msg.sender == pool, "NOT_AUTH");
-        _;
-    }
-
-    function mint(address to, uint256 amount) external onlyOwnerOrPool {
+    function mint(address to, uint256 amount) external onlyOwner {
         updateLiquidityIndex();
         _mint(to, amount);
     }
@@ -44,7 +36,7 @@ contract MockAToken is ERC20, Ownable {
     /**
      * @dev Burn aTokens when underlying is withdrawn
      */
-    function burn(address from, uint256 amount) external onlyOwnerOrPool {
+    function burn(address from, uint256 amount) external onlyOwner {
         updateLiquidityIndex();
         _burn(from, amount);
     }

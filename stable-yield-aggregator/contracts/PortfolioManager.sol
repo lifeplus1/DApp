@@ -221,13 +221,10 @@ contract PortfolioManager is Ownable, ReentrancyGuard {
     function rebalancePortfolio() external onlyRebalancer nonReentrant returns (uint256 gasUsed) {
         uint256 gasStart = gasleft();
         
-        // Allow the very first rebalance immediately; afterwards enforce interval
-        if (portfolioMetrics.rebalanceCount > 0) {
-            require(
-                block.timestamp >= portfolioMetrics.lastRebalanceTime + rebalanceConfig.minRebalanceInterval,
-                "Rebalance too frequent"
-            );
-        }
+        require(
+            block.timestamp >= portfolioMetrics.lastRebalanceTime + rebalanceConfig.minRebalanceInterval,
+            "Rebalance too frequent"
+        );
         
         uint256 totalPortfolioValue = getTotalPortfolioValue();
         require(totalPortfolioValue > 0, "No portfolio value to rebalance");
@@ -296,24 +293,23 @@ contract PortfolioManager is Ownable, ReentrancyGuard {
      * @return weightedAPY Portfolio-weighted APY in basis points
      */
     function calculateWeightedAPY() public view returns (uint256 weightedAPY) {
-        // Use strategy totalAssets instead of portfolio share balance so tests that deposit directly
-        // into strategies still contribute to weighted APY.
         uint256 totalValue = getTotalPortfolioValue();
         if (totalValue == 0) return 0;
-
+        
         uint256 totalWeightedAPY = 0;
-
+        
         for (uint256 i = 0; i < activeStrategies.length; i++) {
             address strategy = activeStrategies[i];
             if (strategies[strategy].isActive && !strategies[strategy].isEmergencyPaused) {
-                uint256 strategyValue = IStrategyV2(strategy).totalAssets();
-                if (strategyValue > 0) {
+                uint256 strategyBalance = IStrategyV2(strategy).balanceOf(address(this));
+                if (strategyBalance > 0) {
                     uint256 strategyAPY = IStrategyV2(strategy).getAPY();
-                    uint256 weight = (strategyValue * 10000) / totalValue;
+                    uint256 weight = (strategyBalance * 10000) / totalValue;
                     totalWeightedAPY += (strategyAPY * weight) / 10000;
                 }
             }
         }
+        
         return totalWeightedAPY;
     }
     
@@ -390,23 +386,6 @@ contract PortfolioManager is Ownable, ReentrancyGuard {
      */
     function addRebalancer(address rebalancer) external onlyOwner {
         authorizedRebalancers[rebalancer] = true;
-    }
-
-    /**
-     * @notice Add an emergency operator (explicit helper used in tests)
-     */
-    function addEmergencyOperator(address operator) external onlyOwner {
-        emergencyOperators[operator] = true;
-    }
-
-    /**
-     * @notice Generic variable setter retained for backwards compatibility with existing tests
-     * @dev Only supports enabling emergency operators for now.
-     */
-    function setVariable(string calldata key, address target, bool value) external onlyOwner {
-        bytes32 h = keccak256(abi.encodePacked(key));
-        require(h == keccak256(abi.encodePacked("emergencyOperators")), "Unsupported key");
-        emergencyOperators[target] = value;
     }
     
     /**

@@ -205,8 +205,8 @@ describe("LiveUniswapV3Strategy", function () {
 
     it("Should maintain historical APY data", async function () {
       // Get initial data points
-      const [_initialAPY, _initialTimestamps] = await strategy.getHistoricalAPY();
-      const initialCount = _initialAPY.length;
+      const [initialAPY, initialTimestamps] = await strategy.getHistoricalAPY();
+      const initialCount = initialAPY.length;
       
       // Trigger several APY updates
       for (let i = 0; i < 3; i++) {
@@ -269,7 +269,7 @@ describe("LiveUniswapV3Strategy", function () {
     });
 
     it("Should update APY when fees are collected", async function () {
-      const _initialAPY = await strategy.getAPY();
+      const initialAPY = await strategy.getAPY();
       
       // Fast forward and collect fees
       await time.increase(24 * 60 * 60); // 1 day

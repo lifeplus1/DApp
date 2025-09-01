@@ -218,96 +218,6 @@ EOF
         
         print_success "All documentation updated!"
         ;;
-
-    "timestamps")
-        print_header
-        echo "🕒 Updating Last updated: timestamps..."
-        TARGET_FILES=(
-            "docs/README.md"
-            "docs/current/PROJECT-STATUS-CONSOLIDATED.md"
-            "docs/current/CONTRACT-ADDRESSES.md"
-            "CONTRIBUTING.md"
-            "CHANGELOG.md"
-            "DOCUMENTATION-AUDIT-2025-09-01.md"
-        )
-        DATE_STR=$(date +%Y-%m-%d)
-        for f in "${TARGET_FILES[@]}"; do
-            if [ -f "$f" ]; then
-                if grep -q "Last updated:" "$f"; then
-                    sed -i.bak "s/Last updated: .*/Last updated: ${DATE_STR}/" "$f" || true
-                fi
-            fi
-        done
-        print_success "Timestamps refreshed to ${DATE_STR}"
-        ;;
-
-    "addresses")
-        print_header
-        echo "🏗  Generating contract addresses table from deployments..."
-        DEPLOY_DIR=${DEPLOYMENTS_DIR:-stable-yield-aggregator/deployments}
-        OUTPUT="docs/current/CONTRACT-ADDRESSES.md"
-        if [ ! -d "$DEPLOY_DIR" ]; then
-            print_info "Deployments directory not found: $DEPLOY_DIR (skipping)"
-            exit 0
-        fi
-        {
-            echo "# 📜 Contract Addresses (Canonical)"
-            echo
-            echo "| Name | Address | Network | Since | Notes |"
-            echo "|------|---------|---------|-------|-------|"
-            grep -R "address" "$DEPLOY_DIR" 2>/dev/null | sed -E 's/.*\\/(.*)\.json:.*"address": "([0-9a-fA-Fx]+)".*/| \1 | \2 | Sepolia | Unknown | Auto |/' | sort
-            echo
-            echo "## Update Policy"
-            echo
-            echo "Regenerated via docs automation script; manual edits will be overwritten."
-            echo
-            echo "Last updated: $(date +%Y-%m-%d)"
-        } > "$OUTPUT"
-        print_success "Contract addresses regenerated"
-        ;;
-
-    "env-check")
-        print_header
-        echo "🔍 Validating required environment variables..."
-        REQUIRED=(RPC_URL DEPLOYER_PRIVATE_KEY UNISWAP_V3_SUBGRAPH)
-        MISSING=0
-        for v in "${REQUIRED[@]}"; do
-            if [ -z "${!v}" ]; then
-                echo "❌ Missing $v"
-                MISSING=1
-            else
-                echo "✅ $v present"
-            fi
-        done
-        if [ $MISSING -eq 1 ]; then
-            echo "One or more required variables missing. See .env.example"
-            exit 1
-        fi
-        print_success "Environment validation passed"
-        ;;
-
-    "link-check")
-        print_header
-        echo "🔗 Scanning markdown links (basic)..."
-        BROKEN=0
-        while IFS= read -r -d '' file; do
-            while IFS= read -r link; do
-                target=$(echo "$link" | sed -E 's/.*\]\(([^)#]+)\).*/\1/')
-                # only local .md links
-                if [[ "$target" == *.md && ! "$target" =~ ^http ]]; then
-                    base=$(dirname "$file")
-                    if [ ! -f "$base/$target" ]; then
-                        echo "❌ $file -> $target"
-                        BROKEN=$((BROKEN+1))
-                    fi
-                fi
-            done < <(grep -oE '\[[^]]+\]\([^)]*\.md[^)]*\)' "$file" || true)
-        done < <(find docs -name '*.md' -print0)
-        if [ $BROKEN -gt 0 ]; then
-            echo "Broken links found: $BROKEN"; exit 2
-        fi
-        print_success "No broken markdown links"
-        ;;
         
     "update-testing")
         TESTING_GUIDE="docs/guides/TESTING-GUIDE.md"
@@ -414,10 +324,6 @@ EOF
         echo "  serve         Start documentation server"
         echo "  update        Update all documentation"
         echo "  check         Check documentation quality"
-    echo "  timestamps    Refresh Last updated: lines"
-    echo "  addresses     Regenerate contract addresses from deployments"
-    echo "  env-check     Validate required environment variables"
-    echo "  link-check    Basic internal markdown link scan"
         echo "  stats         Show documentation statistics"
         echo
         echo "Examples:"
