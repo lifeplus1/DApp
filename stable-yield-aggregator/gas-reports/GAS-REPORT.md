@@ -1,10 +1,10 @@
 # ⛽ Gas Usage Report
 
-Generated: 2025-09-01T14:27:13.256Z
+Generated: 2025-09-01T14:40:28.849Z
 
 | Operation | Gas | Description |
 |-----------|-----|-------------|
-| getAPY (view) | 32891 | Read-only APY calculation |
+| getAPY (view) | 32881 | Read-only APY calculation |
 | totalAssets (view) | 34512 | Read-only total assets |
 | getStrategyMetrics (view) | 39695 | Read-only strategy metrics |
 | Withdrawal 3 | 86472 | 25.0% of shares |

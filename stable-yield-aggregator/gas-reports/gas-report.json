@@ -1,7 +1,7 @@
 [
   {
     "operation": "getAPY (view)",
-    "gas": 32891,
+    "gas": 32881,
     "description": "Read-only APY calculation"
   },
   {
