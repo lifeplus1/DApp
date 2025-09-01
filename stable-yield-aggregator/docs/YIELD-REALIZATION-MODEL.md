@@ -9,11 +9,13 @@ The Enhanced Real Yield Strategy implements a sophisticated yield realization mo
 ### 1. Headline APY vs. Realized APY
 
 **Headline APY**: The advertised or theoretical APY based on market conditions
+
 - Calculated from multiple components: base APY + volatility bonus + liquidity mining + trading fees
 - Ranges from 8% to 25% depending on market conditions
 - Used for previews and user expectations
 
 **Realized APY**: The actual yield that materializes as transferable tokens
+
 - Currently 70% of headline APY (configurable via `REALIZATION_BPS`)
 - Reflects real-world inefficiencies, slippage, and market volatility
 - Only realized yield is minted and transferred during harvests
@@ -21,6 +23,7 @@ The Enhanced Real Yield Strategy implements a sophisticated yield realization mo
 ### 2. Two-Phase Yield System
 
 #### Phase 1: Accrual (Unrealized)
+
 ```solidity
 uint256 headlineAccrued = _calculateAccruedHeadlineYield();
 // Formula: (totalDeposited * currentAPY * timeElapsed) / (365.25 days * 10000 basis points)
@@ -32,6 +35,7 @@ uint256 headlineAccrued = _calculateAccruedHeadlineYield();
 - No tokens minted yet
 
 #### Phase 2: Realization (Harvest)
+
 ```solidity
 uint256 realizedYield = (headlineAccrued * REALIZATION_BPS) / 10000;
 // Currently: realizedYield = headlineAccrued * 0.7
@@ -54,6 +58,7 @@ uint256 public tradingFeeAPY = 200;      // up to +2% (scaled)
 ```
 
 **Dynamic Scaling Factors:**
+
 - Volatility Factor: 50-250 (simulated market conditions)
 - Trading Volume Factor: 75-225 (simulated DEX activity)
 
@@ -67,6 +72,7 @@ function totalAssets() public view override returns (uint256) {
 ```
 
 **Key Design Decisions:**
+
 - Includes full headline accrued yield for accurate previews
 - No double-counting (realized yield is transferred out)
 - Maintains ERC4626 compatibility for `previewRedeem()`
@@ -93,11 +99,13 @@ function harvest() external override returns (uint256 yield) {
 ### 1. ERC4626 Compliance
 
 **Share Pricing**: Maintained at 1:1 ratio for simplicity
+
 - Initial deposit: 1000 USDC → 1000 shares
 - No complex share price calculations
 - Yield distributed proportionally through harvest
 
 **Standard Methods**:
+
 - `deposit()`: Standard ERC4626 deposit flow
 - `redeem()`: Returns principal + proportional realized yield
 - `totalAssets()`: Includes accrued but unrealized yield for previews
@@ -105,12 +113,14 @@ function harvest() external override returns (uint256 yield) {
 ### 2. Accounting Integrity
 
 **Principal Tracking**:
+
 ```solidity
 mapping(address => uint256) private userDeposits; // For testing/analytics
 uint256 public totalDeposited; // Core principal tracking
 ```
 
 **No Double Counting**:
+
 - Accrued yield: Counted in `totalAssets()` only
 - Realized yield: Transferred to vault, removed from strategy
 - Vault aggregates: `vaultIdle + strategyTokenBalance`
@@ -118,6 +128,7 @@ uint256 public totalDeposited; // Core principal tracking
 ### 3. Realistic Yield Modeling
 
 **3-Month Scenario Results**:
+
 - Headline APY: ~18-21%
 - Realized APY: ~12-15% (70% realization)
 - 3-Month Profit: ~2.93% (within 2-8% target range)
@@ -126,22 +137,26 @@ uint256 public totalDeposited; // Core principal tracking
 ## Testing Strategy
 
 ### 1. Invariant Tests
+
 - `totalAssets >= totalDeposited` (always)
 - Sum of user balances = `totalDeposited`
 - Harvest never dramatically decreases assets
 - APY remains in configured bounds
 
 ### 2. Proportionality Tests  
+
 - Multi-user withdrawals maintain deposit ratios
 - Partial withdrawals work correctly
 - Dust amounts handled properly
 
 ### 3. Stress Tests
+
 - Rapid deposit/withdraw cycles
 - Large vs. small batch operations
 - Time-based yield consistency
 
 ### 4. Gas Analysis
+
 - Core operations: 80k-150k gas
 - View functions: <50k gas
 - Batch efficiency: Single large > multiple small
@@ -150,16 +165,21 @@ uint256 public totalDeposited; // Core principal tracking
 ## Configuration Parameters
 
 ### Realization Factor
+
 ```solidity
 uint256 public constant REALIZATION_BPS = 7000; // 70%
 ```
+
 **Adjustment Considerations:**
+
 - Higher = More realized yield, higher user returns
 - Lower = More conservative, better matches volatile markets
 - Range: 4000-8000 BPS (40-80%) recommended
 
-### APY Components
+### APY Component Tuning
+
 **Tuning Guidelines:**
+
 - Base APY: Conservative foundation (5-10%)
 - Volatility Bonus: Market-dependent (0-8%)  
 - Liquidity Mining: Protocol incentives (1-5%)
@@ -168,6 +188,7 @@ uint256 public constant REALIZATION_BPS = 7000; // 70%
 ## Integration Examples
 
 ### Frontend Integration
+
 ```javascript
 // Get current strategy metrics
 const [totalDeposits, projectedYield, currentAPY, harvests, realized] = 
@@ -183,6 +204,7 @@ const yield = expectedWithdrawal - principal;
 ```
 
 ### Vault Integration
+
 ```solidity
 // Harvest and apply performance fee
 uint256 yield = currentStrategy.harvest();
@@ -195,11 +217,13 @@ if (yield > 0) {
 ## Migration and Upgrades
 
 ### Parameter Updates
+
 - Only owner can update APY components
 - Limits enforced: Base APY ≤ 20%, Volatility ≤ 10%
 - Events emitted for transparency
 
 ### Strategy Replacement
+
 - Vault supports strategy migration via `setStrategy()`
 - Automatic asset rebalancing during migration
 - User shares remain valid across strategy changes
@@ -207,12 +231,14 @@ if (yield > 0) {
 ## Security Considerations
 
 ### Access Control
+
 - Strategy deployment: Requires vault address
 - Harvest calls: Public (gas optimization)
 - Parameter updates: Owner only
 - Emergency functions: Owner only
 
 ### Economic Security
+
 - No direct user → strategy interaction
 - All flows through vault (ERC4626 compliance)
 - Realistic yield caps prevent runaway inflation
@@ -221,6 +247,7 @@ if (yield > 0) {
 ## Performance Benchmarks
 
 ### Mainnet Targets
+
 - Deploy gas: ~2.5M gas
 - Deposit: ~120k gas  
 - Withdraw: ~110k gas
@@ -228,6 +255,7 @@ if (yield > 0) {
 - View calls: ~25k gas
 
 ### Scalability
+
 - Supports 10k+ concurrent users
 - Linear storage growth with users
 - Sub-linear gas costs with TVL growth
@@ -238,6 +266,7 @@ if (yield > 0) {
 The Enhanced Real Yield Strategy provides a production-ready foundation for realistic DeFi yield generation while maintaining full ERC4626 compatibility and proper accounting practices. The two-phase yield model (accrual → realization) enables accurate preview calculations while ensuring only materializable yields are distributed to users.
 
 Key advantages:
+
 - ✅ ERC4626 compliant
 - ✅ Realistic yield expectations  
 - ✅ Gas optimized

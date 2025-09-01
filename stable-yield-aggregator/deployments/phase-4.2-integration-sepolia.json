@@ -1,0 +1,15 @@
+{
+  "network": "sepolia",
+  "timestamp": "2025-09-01T03:27:07.817Z",
+  "portfolioManager": "0x9189d6926e180F77650020f4fF9b4B9efd0a30C9",
+  "aaveStrategy": "0xdb240a99aacaDeFFB9e85e700cE6F0e489F8d8e6",
+  "strategiesCount": 3,
+  "totalAllocation": 80,
+  "bufferAllocation": 20,
+  "totalAssets": "0.0",
+  "strategies": [
+    "0x46375e552F269a90F42CE4746D23FA9d347142CB",
+    "0x8CFD4548e9E7cb38cA714B188215019A63E9B90f",
+    "0xE1638A4DfB877343D0Bf1CA5899BbEa66440279a"
+  ]
+}
