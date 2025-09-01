@@ -4,7 +4,16 @@ require("@typechain/hardhat");
 require("dotenv").config();
 
 module.exports = {
-  solidity: "0.8.26", // Latest secure version with best practices for gas efficiency and security.
+  solidity: {
+    version: "0.8.26", 
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      },
+      viaIR: true // Enable to handle stack too deep errors
+    }
+  },
   networks: {
     sepolia: {
       url: process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org",

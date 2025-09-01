@@ -1,0 +1,20 @@
+{
+  "network": "sepolia",
+  "timestamp": "2025-09-01T03:13:01.132Z",
+  "deployer": "0x0898eD837a003F11efc212f13591a20cdeffb912",
+  "contracts": {
+    "aaveStrategy": "0xdb240a99aacaDeFFB9e85e700cE6F0e489F8d8e6",
+    "portfolioManager": "0x9C2e9Ffc91065f3f780387c38DAd7FCBD884e25a"
+  },
+  "mockContracts": {
+    "mockAAVE": "0xf58242e02BA0104C5cb57bf8D7274f3ECE905139",
+    "mockUSDC": "0x3F2178618013EeFE109857aB3eC83049C90968bA",
+    "mockAUSDC": "0xAD99C6a86421bFb981fC1135CD8af6dc1Ee5a4DD",
+    "mockAavePool": "0x631dD38592e9c77982b3b9583129A0F9b4f6cfB4",
+    "mockAaveRewards": "0xdd2aA6ef222Ad8e2C9626888Fd59b02FEC88E70e"
+  },
+  "strategyInfo": {
+    "performanceFee": "1000",
+    "allocation": "15%"
+  }
+}
