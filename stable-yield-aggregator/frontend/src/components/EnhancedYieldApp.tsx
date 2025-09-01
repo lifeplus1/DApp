@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { ethers } from 'ethers';
 import EnhancedStrategyDashboard from './EnhancedStrategyDashboard';
 import deployments from '../deployments.json';
-import '../types/ethereum'; // Import the global ethereum types
+import { WalletSwitchError, WalletOperationError } from '../types/ethereum';
 
 const EnhancedYieldApp: React.FC = () => {
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
@@ -11,11 +11,17 @@ const EnhancedYieldApp: React.FC = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [networkSupported, setNetworkSupported] = useState(true);
 
-  // Check if we're on Sepolia testnet
-  const checkNetwork = async (provider: ethers.BrowserProvider) => {
+  // Memoized network configuration
+  const networkConfig = useMemo(() => ({
+    chainId: deployments.network.chainId,
+    name: deployments.network.name || 'Sepolia'
+  }), []);
+
+  // Check if we're on Sepolia testnet - memoized with useCallback
+  const checkNetwork = useCallback(async (provider: ethers.BrowserProvider) => {
     try {
       const network = await provider.getNetwork();
-      const isSupported = network.chainId.toString() === deployments.network.chainId;
+      const isSupported = network.chainId.toString() === networkConfig.chainId;
       setNetworkSupported(isSupported);
       return isSupported;
     } catch (error) {
@@ -23,10 +29,10 @@ const EnhancedYieldApp: React.FC = () => {
       setNetworkSupported(false);
       return false;
     }
-  };
+  }, [networkConfig.chainId]);
 
-  // Connect to wallet
-  const connectWallet = async () => {
+  // Connect to wallet - optimized with useCallback
+  const connectWallet = useCallback(async () => {
     if (!window.ethereum) {
       alert('Please install MetaMask or another Ethereum wallet');
       return;
@@ -52,8 +58,9 @@ const EnhancedYieldApp: React.FC = () => {
             params: [{ chainId: `0x${parseInt(deployments.network.chainId).toString(16)}` }],
           });
           await checkNetwork(newProvider);
-        } catch (switchError: any) {
-          if (switchError.code === 4902) {
+        } catch (switchError) {
+          const walletError = switchError as WalletSwitchError;
+          if (walletError.code === 4902) {
             // Network not added to wallet, add it
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
@@ -80,50 +87,55 @@ const EnhancedYieldApp: React.FC = () => {
       setSigner(newSigner);
       setAccount(address);
 
-    } catch (error: any) {
-      console.error('Error connecting wallet:', error);
-      alert('Failed to connect wallet: ' + error.message);
+    } catch (error) {
+      const walletError = error as WalletOperationError;
+      console.error('Error connecting wallet:', walletError);
+      alert('Failed to connect wallet: ' + walletError.message);
     } finally {
       setIsConnecting(false);
     }
-  };
+  }, [checkNetwork]);
 
-  // Disconnect wallet
-  const disconnectWallet = () => {
+  // Disconnect wallet - optimized with useCallback
+  const disconnectWallet = useCallback(() => {
     setProvider(null);
     setSigner(null);
     setAccount('');
     setNetworkSupported(true);
-  };
+  }, []);
+
+  // Optimized event handlers with useCallback
+  const handleAccountsChanged = useCallback((accounts: string[]) => {
+    if (accounts.length === 0) {
+      disconnectWallet();
+    } else {
+      connectWallet();
+    }
+  }, [disconnectWallet, connectWallet]);
+
+  const handleChainChanged = useCallback(() => {
+    window.location.reload();
+  }, []);
 
   // Initialize provider on load
   useEffect(() => {
-    if (window.ethereum && (window.ethereum as any).selectedAddress) {
+    if (window.ethereum && (window.ethereum as { selectedAddress?: string }).selectedAddress) {
       connectWallet();
     }
 
     // Listen for account changes
     if (window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
-        if (accounts.length === 0) {
-          disconnectWallet();
-        } else {
-          connectWallet();
-        }
-      });
-
-      window.ethereum.on('chainChanged', () => {
-        window.location.reload();
-      });
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
     }
 
     return () => {
       if (window.ethereum) {
-        window.ethereum.removeListener('accountsChanged', () => {});
-        window.ethereum.removeListener('chainChanged', () => {});
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
       }
     };
-  }, []);
+  }, [connectWallet, handleAccountsChanged, handleChainChanged]);
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;

@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Button } from '@headlessui/react';
 import { CONTRACTS, YIELD_OPTIMIZER_ABI, ENHANCED_STRATEGY_ABI } from '../constants/contracts';
+import type { Provider } from '../types/ethereum';
 
 interface StrategyMetrics {
   address: string;
@@ -11,33 +13,64 @@ interface StrategyMetrics {
 }
 
 interface YieldAnalyticsProps {
-  web3Provider?: any;
+  web3Provider?: Provider | null;
 }
+
+// Accessible Badge Component
+const Badge: React.FC<{
+  children: React.ReactNode;
+  variant: 'success' | 'warning' | 'error' | 'info';
+  size?: 'sm' | 'md';
+}> = ({ children, variant, size = 'sm' }) => {
+  const baseClasses = "inline-flex items-center font-medium rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2";
+  const sizeClasses = size === 'sm' ? 'px-2.5 py-0.5 text-xs' : 'px-3 py-1 text-sm';
+  const variantClasses = {
+    success: 'bg-green-100 text-green-800 focus:ring-green-500',
+    warning: 'bg-yellow-100 text-yellow-800 focus:ring-yellow-500',
+    error: 'bg-red-100 text-red-800 focus:ring-red-500',
+    info: 'bg-blue-100 text-blue-800 focus:ring-blue-500'
+  };
+
+  return (
+    <span className={`${baseClasses} ${sizeClasses} ${variantClasses[variant]}`}>
+      {children}
+    </span>
+  );
+};
 
 export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) => {
   const [strategies, setStrategies] = useState<StrategyMetrics[]>([]);
   const [bestStrategy, setBestStrategy] = useState<{address: string, apy: number} | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchStrategyMetrics = async () => {
+  // Memoized contract configuration
+  const contractConfig = useMemo(() => ({
+    yieldOptimizer: CONTRACTS.advancedYieldOptimizer,
+    enhancedStrategy: CONTRACTS.enhancedUniswapStrategy,
+    yieldOptimizerABI: YIELD_OPTIMIZER_ABI,
+    enhancedStrategyABI: ENHANCED_STRATEGY_ABI
+  }), []);
+
+  // Optimized strategy metrics fetching with useCallback
+  const fetchStrategyMetrics = useCallback(async () => {
     if (!web3Provider) return;
     
     setLoading(true);
     try {
       const { ethers } = await import('ethers');
-      const signer = web3Provider.getSigner();
+      const signer = await web3Provider.getSigner();
       
       // Connect to YieldOptimizer
       const yieldOptimizer = new ethers.Contract(
-        CONTRACTS.advancedYieldOptimizer,
-        YIELD_OPTIMIZER_ABI,
+        contractConfig.yieldOptimizer,
+        contractConfig.yieldOptimizerABI,
         signer
       );
       
       // Connect to Enhanced Strategy
       const enhancedStrategy = new ethers.Contract(
-        CONTRACTS.enhancedUniswapStrategy,
-        ENHANCED_STRATEGY_ABI,
+        contractConfig.enhancedStrategy,
+        contractConfig.enhancedStrategyABI,
         signer
       );
       
@@ -69,7 +102,7 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
             apy: Number(bestAPY) / 100,
           });
         }
-      } catch (error) {
+      } catch (_error) {
         console.log('Best strategy call failed (expected in current setup)');
       }
       
@@ -78,16 +111,18 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [web3Provider, contractConfig]);
 
+  // Optimized effect with proper dependencies
   useEffect(() => {
     if (web3Provider) {
       fetchStrategyMetrics();
     }
-  }, [web3Provider]);
+  }, [web3Provider, fetchStrategyMetrics]);
 
-  const formatAPY = (apy: number) => `${apy.toFixed(2)}%`;
-  const formatTVL = (tvl: number) => `$${tvl.toLocaleString()}`;
+  // Memoized formatting functions
+  const formatAPY = useCallback((apy: number) => `${apy.toFixed(2)}%`, []);
+  const formatTVL = useCallback((tvl: number) => `$${tvl.toLocaleString()}`, []);
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
@@ -95,14 +130,15 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
         <h2 className="text-2xl font-bold text-gray-800">
           🧠 Advanced Yield Analytics
         </h2>
-        <button
+        <Button
           onClick={fetchStrategyMetrics}
           disabled={loading}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                   disabled:opacity-50 transition-colors"
+                   disabled:opacity-50 disabled:cursor-not-allowed transition-colors
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           {loading ? '🔄 Loading...' : '🔄 Refresh'}
-        </button>
+        </Button>
       </div>
 
       {/* Best Strategy Recommendation */}
@@ -146,41 +182,35 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
                   </div>
                 </td>
                 <td className="py-3 px-2">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                    ${strategy.apy > 10 
-                      ? 'bg-green-100 text-green-800' 
-                      : strategy.apy > 5 
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
+                  <Badge variant={strategy.apy > 10 ? 'success' : strategy.apy > 5 ? 'warning' : 'info'}>
                     {formatAPY(strategy.apy)}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="py-3 px-2 text-gray-900">
                   {formatTVL(strategy.tvl)}
                 </td>
                 <td className="py-3 px-2">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                    ${strategy.isActive 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                    }`}>
+                  <Badge variant={strategy.isActive ? 'success' : 'error'}>
                     {strategy.isActive ? '✅ Active' : '❌ Inactive'}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="py-3 px-2">
                   <div className="flex items-center">
-                    <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
+                    <div className="flex-1 bg-gray-200 rounded-full h-2 mr-2 overflow-hidden">
                       <div
-                        className={`bg-blue-600 h-2 rounded-full ${
-                          strategy.allocation === 100 ? 'w-full' : 
-                          strategy.allocation >= 75 ? 'w-3/4' :
-                          strategy.allocation >= 50 ? 'w-1/2' :
-                          strategy.allocation >= 25 ? 'w-1/4' : 'w-1/12'
+                        className={`h-full rounded-full transition-all duration-300 ease-out ${
+                          strategy.allocation >= 100 ? 'w-full bg-blue-600' :
+                          strategy.allocation >= 75 ? 'w-3/4 bg-blue-600' :
+                          strategy.allocation >= 50 ? 'w-1/2 bg-blue-600' :
+                          strategy.allocation >= 25 ? 'w-1/4 bg-blue-600' :
+                          'w-1/12 bg-blue-600'
                         }`}
-                      ></div>
+                        title={`Allocation: ${strategy.allocation}%`}
+                      />
                     </div>
-                    <span className="text-sm text-gray-600">{strategy.allocation}%</span>
+                    <span className="text-sm text-gray-600 min-w-[3rem]">
+                      {strategy.allocation}%
+                    </span>
                   </div>
                 </td>
               </tr>
@@ -210,7 +240,13 @@ export const YieldAnalytics: React.FC<YieldAnalyticsProps> = ({ web3Provider }) 
 
       {loading && (
         <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div
+            className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"
+            role="status"
+            aria-label="Loading strategy data"
+          >
+            <span className="sr-only">Loading...</span>
+          </div>
         </div>
       )}
     </div>

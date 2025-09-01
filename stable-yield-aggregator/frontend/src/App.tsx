@@ -12,14 +12,19 @@ import {
 import { YieldAnalytics } from './components/YieldAnalytics';
 import { UniswapV3Dashboard } from './components/UniswapV3Dashboard';
 import EnhancedYieldApp from './components/EnhancedYieldApp';
+import IntegrationTestDashboard from './components/IntegrationTestDashboard';
 
 const DeFiApp: React.FC = () => {
   const { state, actions } = useDeFi();
-  const [showEnhanced, setShowEnhanced] = useState(false);
+  const [currentView, setCurrentView] = useState<'main' | 'enhanced' | 'integration'>('main');
 
-  // Toggle between original and enhanced view
-  if (showEnhanced) {
+  // View switching
+  if (currentView === 'enhanced') {
     return <EnhancedYieldApp />;
+  }
+
+  if (currentView === 'integration') {
+    return <IntegrationTestDashboard />;
   }
 
   return (
@@ -37,13 +42,21 @@ const DeFiApp: React.FC = () => {
           </p>
           
           {/* Platform Toggle */}
-          <div className="flex justify-center mb-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
             <button
-              onClick={() => setShowEnhanced(true)}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 flex items-center space-x-2"
+              onClick={() => setCurrentView('enhanced')}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 flex items-center justify-center space-x-2"
             >
               <span className="text-xl">🚀</span>
-              <span>Experience Real Uniswap V3 Yields (Phase 2)</span>
+              <span>Experience Real Uniswap V3 Yields</span>
+            </button>
+            
+            <button
+              onClick={() => setCurrentView('integration')}
+              className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 flex items-center justify-center space-x-2"
+            >
+              <span className="text-xl">🧪</span>
+              <span>Phase 5.2 Integration Test</span>
             </button>
           </div>
           

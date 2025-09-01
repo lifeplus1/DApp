@@ -9,12 +9,13 @@ import {
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import useEnhancedStrategy from '../hooks/useEnhancedStrategy';
+import type { Provider, Signer } from '../types/ethereum';
 
 interface EnhancedStrategyDashboardProps {
   strategyAddress: string;
   vaultAddress: string;
-  provider?: any;
-  signer?: any;
+  provider?: Provider | null;
+  signer?: Signer | null;
   className?: string;
 }
 
@@ -34,8 +35,8 @@ const EnhancedStrategyDashboard: React.FC<EnhancedStrategyDashboardProps> = ({
   const { metrics, userBalance, loading, error, actions } = useEnhancedStrategy({
     strategyAddress,
     vaultAddress,
-    provider,
-    signer
+    ...(provider && { provider }),
+    ...(signer && { signer })
   });
 
   const handleDeposit = async () => {

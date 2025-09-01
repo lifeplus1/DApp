@@ -1,6 +1,14 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { ethers, BrowserProvider } from 'ethers';
+import React, { createContext, useContext, useReducer, useEffect, useMemo, useCallback } from 'react';
+import { ethers, BrowserProvider, Contract } from 'ethers';
 import type { Strategy, ContractAddresses } from '../types/web3';
+
+interface ContractInstances {
+  vault?: Contract;
+  mockUSDC?: Contract;
+  strategyManager?: Contract;
+  dummyStrategy?: Contract;
+  [key: string]: Contract | undefined;
+}
 
 // Advanced state management for DeFi operations
 interface DeFiState {
@@ -11,7 +19,7 @@ interface DeFiState {
   isConnecting: boolean;
   
   // Contract state
-  contracts: any;
+  contracts: ContractInstances;
   balances: {
     usdc: bigint;
     vault: bigint;
@@ -56,7 +64,7 @@ const initialState: DeFiState = {
   provider: null,
   chainId: null,
   isConnecting: false,
-  contracts: null,
+  contracts: {},
   balances: {
     usdc: 0n,
     vault: 0n,
@@ -210,7 +218,16 @@ const STRATEGY_MANAGER_ABI = [
 export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(defiReducer, initialState);
 
-  const connectWallet = async () => {
+  // Memoized contract addresses configuration
+  const contractAddresses = useMemo(() => ({
+    vault: '0x0AFCE27CA41E84a50144324a2A5762459bF2C487',
+    mockUSDC: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+    strategyManager: '0x46375e552F269a90F42CE4746D23FA9d347142CB',
+    dummyStrategy: '0xD3e7F770403019aFCAE9A554aB00d062e2688348'
+  }), []);
+
+  // Optimized wallet connection with useCallback
+  const connectWallet = useCallback(async () => {
     try {
       dispatch({ type: 'CONNECT_START' });
 
@@ -236,17 +253,19 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: '0xaa36a7' }],
           });
-        } catch (switchError: any) {
-          if (switchError.code === 4902) {
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: '0xaa36a7',
-                chainName: 'Sepolia Test Network',
-                rpcUrls: ['https://sepolia.infura.io/v3/'],
-                blockExplorerUrls: ['https://sepolia.etherscan.io/']
-              }],
-            });
+        } catch (switchError: unknown) {
+          if (switchError instanceof Error && 'code' in switchError) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0xaa36a7',
+                  chainName: 'Sepolia Test Network',
+                  rpcUrls: ['https://sepolia.infura.io/v3/'],
+                  blockExplorerUrls: ['https://sepolia.etherscan.io/']
+                }],
+              });
+            }
           }
         }
       }
@@ -268,26 +287,29 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to connect wallet';
       dispatch({
         type: 'CONNECT_ERROR',
-        payload: error.message || 'Failed to connect wallet'
+        payload: errorMessage
       });
     }
-  };
+  }, []);
 
-  const disconnect = () => {
+  // Optimized disconnect function with useCallback
+  const disconnect = useCallback(() => {
     dispatch({ type: 'DISCONNECT' });
-  };
+  }, []);
 
-  const refreshBalances = async () => {
+  // Optimized balance refresh with useCallback
+  const refreshBalances = useCallback(async () => {
     if (!state.provider || !state.account) return;
 
     try {
       const signer = await state.provider.getSigner();
       
-      const vaultContract = new ethers.Contract(CONTRACT_ADDRESSES.vault, VAULT_ABI, signer);
-      const usdcContract = new ethers.Contract(CONTRACT_ADDRESSES.mockUSDC, ERC20_ABI, signer);
+      const vaultContract = new ethers.Contract(contractAddresses.vault, VAULT_ABI, signer);
+      const usdcContract = new ethers.Contract(contractAddresses.mockUSDC, ERC20_ABI, signer);
 
       const [vaultBalance, usdcBalance, ethBalance] = await Promise.all([
         vaultContract.balanceOf!(state.account) as Promise<bigint>,
@@ -307,7 +329,7 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Failed to refresh balances:', error);
     }
-  };
+  }, [state.provider, state.account, contractAddresses]);
 
   const refreshStrategies = async () => {
     if (!state.provider) return;
@@ -375,12 +397,13 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       await refreshBalances();
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       dispatch({
         type: 'ADD_NOTIFICATION',
         payload: {
           type: 'error',
-          message: `Deposit failed: ${error.message || 'Unknown error'}`
+          message: `Deposit failed: ${errorMessage}`
         }
       });
     } finally {
@@ -412,12 +435,13 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       await refreshBalances();
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       dispatch({
         type: 'ADD_NOTIFICATION',
         payload: {
           type: 'error',
-          message: `Withdrawal failed: ${error.message || 'Unknown error'}`
+          message: `Withdrawal failed: ${errorMessage}`
         }
       });
     } finally {
@@ -448,12 +472,13 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await refreshBalances();
       await refreshStrategies();
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       dispatch({
         type: 'ADD_NOTIFICATION',
         payload: {
           type: 'error',
-          message: `Harvest failed: ${error.message || 'Unknown error'}`
+          message: `Harvest failed: ${errorMessage}`
         }
       });
     } finally {
@@ -484,9 +509,10 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setTimeout(() => removeNotification(notification.id), 100);
       }
     });
-  }, [state.notifications]);
+  }, [state.notifications, removeNotification]);
 
-  const actions = {
+  // Memoized actions to prevent unnecessary re-renders
+  const actions = useMemo(() => ({
     connectWallet,
     disconnect,
     refreshBalances,
@@ -496,10 +522,16 @@ export const DeFiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     harvest,
     addNotification,
     removeNotification
-  };
+  }), [connectWallet, disconnect, refreshBalances, refreshStrategies, deposit, withdraw, harvest, addNotification, removeNotification]);
+
+  // Memoized context value
+  const contextValue = useMemo(() => ({
+    state,
+    actions
+  }), [state, actions]);
 
   return (
-    <DeFiContext.Provider value={{ state, actions }}>
+    <DeFiContext.Provider value={contextValue}>
       {children}
     </DeFiContext.Provider>
   );
