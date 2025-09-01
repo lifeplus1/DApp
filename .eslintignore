@@ -1,0 +1,74 @@
+# ESLint ignore patterns for DeFi DApp
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+
+# Hardhat/Foundry artifacts
+stable-yield-aggregator/artifacts/
+stable-yield-aggregator/cache/
+stable-yield-aggregator/typechain-types/
+**/artifacts/
+**/cache/
+**/typechain-types/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Environment and config
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Minified files
+*.min.js
+*.min.css
+
+# Generated documentation
+docs/generated/
+
+# Smart contract compilation artifacts
+*.abi
+*.bin
+*.deployments
+deployments/
+
+# Frontend build specific
+public/build/
+src/**/*.d.ts
+!src/types/**/*.d.ts

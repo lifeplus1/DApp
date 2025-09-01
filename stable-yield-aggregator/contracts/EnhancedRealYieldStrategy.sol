@@ -93,28 +93,27 @@ contract EnhancedRealYieldStrategy is IStrategyV2, Ownable, ReentrancyGuard {
      */
     function withdraw(uint256 shares, address receiver, address owner) external override onlyVault nonReentrant returns (uint256 assets) {
         require(shares > 0, "Shares must be greater than zero");
-        require(totalDeposited >= shares, "Insufficient balance");
         require(receiver != address(0), "Invalid receiver");
         require(owner != address(0), "Invalid owner");
 
         // For this implementation, we treat shares 1:1 with assets
         uint256 amount = shares;
 
-        // Calculate the maximum amount we can withdraw
+        // Calculate the maximum amount we can withdraw (including any yield)
         uint256 availableBalance = asset.balanceOf(address(this));
+        require(availableBalance >= amount, "Insufficient balance");
+        
         uint256 actualWithdraw = amount;
 
-        if (availableBalance < amount) {
-            // For this enhanced strategy, we'll limit withdrawals to available balance
-            actualWithdraw = availableBalance;
+        // We can withdraw the full amount since we already checked availableBalance >= amount
+        // Update totalDeposited tracking, but don't let it go below 0
+        if (actualWithdraw <= totalDeposited) {
+            totalDeposited -= actualWithdraw;
+        } else {
+            // Withdrawing more than originally deposited (including yield)
+            totalDeposited = 0;
         }
 
-        // Ensure we don't withdraw more than deposited
-        if (actualWithdraw > totalDeposited) {
-            actualWithdraw = totalDeposited;
-        }
-
-        totalDeposited -= actualWithdraw;
         asset.transfer(receiver, actualWithdraw);
 
         emit Withdrawal(actualWithdraw, actualWithdraw);

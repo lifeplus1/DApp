@@ -24,11 +24,22 @@
     "git:commit": "git add . && git commit -m",
     "git:push": "git push origin main",
     "release:prepare": "npm run compile && npm run test && npm run build",
-    "deploy:testnet": "npm run compile && ./dev.sh deploy-sepolia"
+    "deploy:testnet": "npm run compile && ./dev.sh deploy-sepolia",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:check": "eslint . --max-warnings 0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@typescript-eslint/eslint-plugin": "^8.11.0",
+    "@typescript-eslint/parser": "^8.11.0",
     "concurrently": "^8.2.2",
-    "nodemon": "^3.0.1"
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "nodemon": "^3.0.1",
+    "typescript-eslint": "^8.41.0"
   },
   "engines": {
     "node": ">=18.0.0",

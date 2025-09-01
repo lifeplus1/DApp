@@ -38,12 +38,11 @@ contract StableVault is ERC4626, Ownable {
      * @dev Override to withdraw from strategy.
      */
     function _withdraw(address caller, address receiver, address owner, uint256 assets, uint256 shares) internal virtual override {
-        // Calculate shares to withdraw from strategy based on assets
-        uint256 totalStrategyShares = currentStrategy.balanceOf(owner);
-        uint256 sharesToWithdraw = totalStrategyShares > 0 ? (shares * totalStrategyShares) / balanceOf(owner) : 0;
-        
-        if (sharesToWithdraw > 0) {
-            currentStrategy.withdraw(sharesToWithdraw, address(this), owner);
+        // The vault delegates all assets to the strategy, so we need to withdraw from strategy first
+        if (address(currentStrategy) != address(0) && assets > 0) {
+            // Withdraw the exact amount of assets needed from the strategy
+            // Since we're using a 1:1 shares model in our strategies, assets = shares for withdrawal
+            currentStrategy.withdraw(assets, address(this), address(this));
         }
         super._withdraw(caller, receiver, owner, assets, shares);
     }
@@ -78,15 +77,21 @@ contract StableVault is ERC4626, Ownable {
     function setStrategy(address newStrategy) external onlyOwner {
         require(newStrategy != address(0), "Invalid strategy address");
         
-        // If we have assets in the current strategy, migrate them
-        uint256 assets = currentStrategy.balanceOf(address(this));
-        if (assets > 0) {
-            // Withdraw from current strategy
-            currentStrategy.withdraw(assets, address(this), address(this));
+        // If we have assets, migrate them from current to new strategy
+        uint256 totalVaultAssets = totalAssets();
+        if (totalVaultAssets > 0 && address(currentStrategy) != address(0)) {
+            // The vault has delegated all its assets to the current strategy
+            // We need to withdraw everything and re-deposit to the new strategy
             
-            // Deposit to new strategy
-            IERC20(asset()).approve(newStrategy, assets);
-            IStrategyV2(newStrategy).deposit(assets, address(this));
+            // First, check how much the strategy has (including yield)
+            uint256 strategyTotal = currentStrategy.totalAssets();
+            
+            // Withdraw all from current strategy
+            currentStrategy.withdraw(strategyTotal, address(this), address(this));
+            
+            // Deposit all to new strategy  
+            IERC20(asset()).approve(newStrategy, strategyTotal);
+            IStrategyV2(newStrategy).deposit(strategyTotal, address(this));
         }
         
         currentStrategy = IStrategyV2(newStrategy);

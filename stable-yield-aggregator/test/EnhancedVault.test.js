@@ -23,8 +23,8 @@ describe("Enhanced Stablecoin Yield Aggregator", function () {
     dummyStrategy = await DummyStrategy.deploy(asset.target);
     await dummyStrategy.waitForDeployment();
 
-    const UniswapV3Strategy = await ethers.getContractFactory("UniswapV3Strategy");
-    uniStrategy = await UniswapV3Strategy.deploy(asset.target, ethers.ZeroAddress, owner.address); // Mock pool
+    const LiveUniswapV3Strategy = await ethers.getContractFactory("LiveUniswapV3Strategy");
+    uniStrategy = await LiveUniswapV3Strategy.deploy(asset.target);
     await uniStrategy.waitForDeployment();
 
     // Deploy Vault
@@ -113,8 +113,8 @@ describe("Enhanced Stablecoin Yield Aggregator", function () {
       // Switch to a new strategy (this would be called by owner when better yields are found)
       await vault.setStrategy(uniStrategy.target);
       
-      // Assets should be maintained during strategy switch
-      expect(await vault.totalAssets()).to.equal(initialAssets);
+      // Assets should be maintained during strategy switch (may be higher due to yield)
+      expect(await vault.totalAssets()).to.be.gte(initialAssets);
     });
   });
 
